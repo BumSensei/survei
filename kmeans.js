@@ -1,17 +1,18 @@
 /* ========================================================================
-   FILE: kmeans.js (FINAL SYNCHRONIZED VERSION - HANYA DATA TIKTOK)
+   FILE: kmeans.js (SINKRONISASI AKHIR - DATA TIKTOK)
    ======================================================================== */
 
 /* ==== 1. KONFIGURASI ==== */
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyw2AHLZs3KVqr_v99_oSH-Oy5zHUtEH3_y-tfBt_305weCdCXf5AxqDkGN1spqsvwO/exec",
-  // VARIABEL CLUSTERING BARU (SUDAH OHE OLEH code.gs):
-  // Total 20 variabel: 11 Kategori Konten OHE + 7 Sifat Video OHE + 2 Pilihan Ganda
+  // URL WEB APP BARU ANDA
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzYp9zSn8hyxfG-9x4CpUkR2acwxlcITyaL_n9QatUzjdexQGHwpIhK0brbTxoTIuaA/exec", 
+  // VARIABEL CLUSTERING BARU (20 variabel OHE)
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Mode", "Kategori_Gaming", 
     "Kategori_Berita", "Kategori_Olahraga", "Kategori_DIY", "Kategori_Musik", "Kategori_Mental", "Kategori_Travel",
     "Sifat_Fakta", "Sifat_Hiburan", "Sifat_Relaksasi", "Sifat_Inspirasi", "Sifat_Narasi", "Sifat_Skill", "Sifat_Estetik",
-    "durasi_video", "format_video"
+    "durasi_video", 
+    "format_video" 
   ]
 };
 
@@ -52,14 +53,18 @@ function calculateSSE(data, centroids, assignments) {
   return data.reduce((sum, p, i) => sum + euclidean(p, centroids[assignments[i]]) ** 2, 0);
 }
 
-/* ==== 3. AUTO-LABELING (FUNGSI LABELING DEFAULT) ==== */
+/* ==== 3. AUTO-LABELING (DEFAULT TIKTOK) ==== */
 function getAutoLabel(c) {
-  // c[18] = durasi, c[19] = format
-  let name = "Cluster Custom";
-  if (c[18] > 0.6 && c[19] > 0.6) name = "Konten Panjang & Naratif";
-  else if (c[0] > 0.5 || c[1] > 0.5) name = "Fokus Komedi/Edukasi";
+  // c adalah centroid yang sudah dinormalisasi (0-1)
+  // Indeks penting: Komedi(0), Edukasi(1), Fakta(11), Hiburan(12)
+  const komedi = c[0], edukasi = c[1], fakta = c[11], hiburan = c[12];
   
-  return { name: name, desc: "Analisis profil cluster ini secara mendalam di luar sistem." };
+  if (komedi > 0.6 && hiburan > 0.6) return { name: "😂 Pencari Hiburan Ringan", desc: "Prioritas utama adalah tawa dan hiburan, menyukai video pendek yang lucu dan spontan." };
+  if (edukasi > 0.6 && fakta > 0.6) return { name: "💡 Pembelajar Produktif", desc: "Aktif mencari informasi, tutorial, dan fakta baru, cenderung menyukai konten yang berdurasi menengah." };
+  if (c[2] > 0.5 || c[3] > 0.5) return { name: "🍴 Penikmat Gaya Hidup", desc: "Fokus pada konten Makanan, Mode, dan Estetika. Mencari inspirasi visual dan tren." };
+  if (c[18] > 0.6 || c[19] > 0.6) return { name: "📖 Audiens Naratif", desc: "Menyukai konten yang lebih panjang, berformat narasi, cerita, atau review mendalam." };
+  
+  return { name: "🔀 Penonton Campuran (Pasif)", desc: "Tidak memiliki preferensi yang kuat, mengonsumsi berbagai jenis konten secara acak." };
 }
 
 /* ==== 4. EVENT HANDLERS ==== */
@@ -81,6 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Data mentah hanya mengambil variabel OHE baru
       const raw = fullDataset.map(d => CONFIG.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
+      // Normalisasi (Min-Max Scaling)
       const mins = Array(CONFIG.CLUSTERING_VARS.length).fill(Infinity), maxs = Array(CONFIG.CLUSTERING_VARS.length).fill(-Infinity);
       raw.forEach(p => p.forEach((v, i) => { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }));
       clusteringData = raw.map(p => p.map((v, i) => (v - mins[i]) / ((maxs[i] - mins[i]) || 1)));
@@ -204,7 +210,13 @@ function renderScatterChart(data, assignments, k) {
 function renderRawTable(data) {
   const t = document.getElementById("data-table");
   // Tampilkan hanya kolom yang ada di dataset baru
-  let h = `<thead class="bg-gray-100 sticky top-0"><tr><th class="p-2">Durasi</th><th class="p-2">Format</th><th class="p-2">Kategori Raw</th><th class="p-2">Sifat Raw</th></tr></thead><tbody>`;
-  data.forEach(r => h+=`<tr class="border-t"><td class="p-2">${MAPPING.durasi[r.durasi_video]||r.durasi_video}</td><td class="p-2">${MAPPING.format[r.format_video]||r.format_video}</td><td class="p-2 font-bold text-blue-600">${r.kategori_raw}</td><td class="p-2 font-bold text-green-600">${r.sifat_raw}</td></tr>`);
+  let h = `<thead class="bg-gray-100 sticky top-0"><tr><th class="p-2">Timestamp</th><th class="p-2">Durasi</th><th class="p-2">Format</th><th class="p-2">Kategori Raw</th><th class="p-2">Sifat Raw</th></tr></thead><tbody>`;
+  data.forEach(r => h+=`<tr class="border-t">
+    <td class="p-2">${r.timestamp.toLocaleDateString('id-ID')}</td>
+    <td class="p-2">${MAPPING.durasi[r.durasi_video]||r.durasi_video}</td>
+    <td class="p-2">${MAPPING.format[r.format_video]||r.format_video}</td>
+    <td class="p-2 font-bold text-blue-600">${r.kategori_raw}</td>
+    <td class="p-2 font-bold text-green-600">${r.sifat_raw}</td>
+  </tr>`);
   t.innerHTML = h+"</tbody>";
 }
