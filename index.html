@@ -108,20 +108,18 @@
   </div>
 
 <script>
-// Pastikan URL ini sama persis dengan yang ada di kmeans.js / admin.html
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw2AHLZs3KVqr_v99_oSH-Oy5zHUtEH3_y-tfBt_305weCdCXf5AxqDkGN1spqsvwO/exec";
+// URL BARU ANDA
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzYp9zSn8hyxfG-9x4CpUkR2acwxlcITyaL_n9QatUzjdexQGHwpIhK0brbTxoTIuaA/exec";
 
 // --- VALIDASI MULTIPLE SELECT (Perbaikan Bug Type Error) ---
 document.querySelectorAll('.grid[data-max]').forEach(container => {
     const max = parseInt(container.dataset.max);
     const checkboxes = container.querySelectorAll('input[type="checkbox"]');
     
-    // Identifikasi elemen error secara spesifik berdasarkan nama checkbox pertama
     const checkboxName = checkboxes[0] ? checkboxes[0].name : null;
     let errorElement = document.getElementById(`${checkboxName}-error`);
 
     if (!errorElement) {
-        // Fallback atau hentikan jika elemen error tidak ditemukan (seharusnya tidak terjadi)
         console.error(`Error element not found for checkbox group: ${checkboxName}`);
         return;
     }
