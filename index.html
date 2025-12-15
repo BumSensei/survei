@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survei Audiens Generative AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Styling tambahan untuk multiple select */
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .checkbox-item:hover {
+      background-color: #f3f4f6;
+    }
+    .checkbox-item input[type="checkbox"]:checked + span {
+      font-weight: bold;
+      color: #10B981; /* Green-600 */
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-900 font-sans">
+  <div class="min-h-screen flex items-center justify-center py-10 px-4">
+    <div class="max-w-xl w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+      
+      <div class="text-center mb-10">
+        <h1 class="text-3xl font-extrabold text-blue-900 mb-2">📋 Survei Preferensi Konten TikTok</h1>
+        <p class="text-gray-500">Segmentasi berdasarkan kebiasaan menonton</p>
+      </div>
+
+      <form id="survey-form" class="space-y-6">
+        
+        <div>
+          <label class="block font-bold text-gray-700 mb-2">1️⃣ Dari kategori berikut, **manakah 3 yang paling sering** Anda tonton di TikTok? (Pilih Maksimal 3)</label>
+          <div class="grid grid-cols-2 gap-3 p-3 border-2 border-gray-300 rounded-lg bg-white" data-max="3">
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Komedi" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Komedi/Sketsa</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Edukasi" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Edukasi/Pembelajaran</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Makanan" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Masakan/Makanan</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Mode" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Kecantikan/Mode</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Gaming" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Gaming</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Berita" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Berita/Opini Publik</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Olahraga" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Olahraga & Kebugaran</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="DIY" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>DIY/Kerajinan</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Musik" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Tarian/Musik</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Mental" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Kesehatan Mental/Kesejahteraan</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="kategori_konten" value="Travel" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Perjalanan/Vlog</span></label>
+          </div>
+          <p id="kategori-error" class="text-sm text-red-500 mt-1 hidden">Pilih minimal 1 dan maksimal 3 kategori.</p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-2">2️⃣ Saat menonton TikTok, **apa yang paling Anda cari** dari sebuah video? (Pilih Maksimal 2)</label>
+          <div class="grid grid-cols-2 gap-3 p-3 border-2 border-gray-300 rounded-lg bg-white" data-max="2">
+            <label class="checkbox-item"><input type="checkbox" name="sifat_video" value="Fakta" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Informasi/Fakta baru</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="sifat_video" value="Hiburan" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Hiburan/Tawa</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="sifat_video" value="Relaksasi" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Relaksasi/Menenangkan</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="sifat_video" value="Inspirasi" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Inspirasi/Motivasi</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="sifat_video" value="Narasi" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Cerita/Narasi yang kuat</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="sifat_video" value="Skill" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Keahlian teknis (Skill baru)</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="sifat_video" value="Estetik" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Konten Aestetik/Visual menarik</span></label>
+          </div>
+          <p id="sifat-error" class="text-sm text-red-500 mt-1 hidden">Pilih minimal 1 dan maksimal 2 sifat video.</p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-2">3️⃣ Anda cenderung lebih menyukai video TikTok dengan durasi seperti apa?</label>
+          <select name="durasi_video" required class="w-full border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white">
+            <option value="">-- Pilih Durasi --</option>
+            <option value="1">Sangat Pendek (<15 detik)</option>
+            <option value="2">Pendek (15-30 detik)</option>
+            <option value="3">Menengah (30-60 detik)</option>
+            <option value="4">Panjang (>60 detik)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-2">4️⃣ Saat menonton, manakah format video yang paling Anda sukai?</label>
+          <select name="format_video" required class="w-full border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white">
+            <option value="">-- Pilih Format --</option>
+            <option value="1">Video berformat narasi/cerita (Storytelling)</option>
+            <option value="2">Video berformat tutorial/how-to</option>
+            <option value="3">Video berformat review produk/layanan</option>
+            <option value="4">Video berformat reaksi/komentar</option>
+          </select>
+        </div>
+
+        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl text-lg shadow-md transition transform hover:scale-105 flex justify-center items-center">
+          🚀 Kirim Jawaban
+        </button>
+
+        <p id="status" class="text-center text-sm font-medium text-gray-600 mt-4"></p>
+      </form>
+
+      <div class="text-center mt-8 pt-6 border-t border-gray-100">
+        <a href="admin.html" class="text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center justify-center transition">
+          <span class="mr-2">🔑</span> Masuk ke Halaman Admin
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+// Pastikan URL ini sama persis dengan yang ada di kmeans.js / admin.html
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw2AHLZs3KVqr_v99_oSH-Oy5zHUtEH3_y-tfBt_305weCdCXf5AxqDkGN1spqsvwO/exec";
+
+// --- VALIDASI MULTIPLE SELECT ---
+document.querySelectorAll('.grid[data-max]').forEach(container => {
+    const max = parseInt(container.dataset.max);
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    const errorElement = document.getElementById(container.closest('div').querySelector('p[id$="-error"]').id);
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const checkedCount = Array.from(checkboxes).filter(c => c.checked).length;
+            if (checkedCount > max) {
+                checkbox.checked = false;
+                errorElement.textContent = `Pilih maksimal ${max} kategori saja.`;
+                errorElement.classList.remove('hidden');
+                setTimeout(() => errorElement.classList.add('hidden'), 2000);
+            }
+        });
+    });
+});
+// --------------------------------
+
+document.getElementById("survey-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector("button[type='submit']");
+  const originalBtnText = btn.innerHTML;
+  const status = document.getElementById("status");
+
+  // --- VALIDASI MULTIPLE SELECT SAAT SUBMIT ---
+  const kategoriCheckboxes = form.querySelectorAll('input[name="kategori_konten"]:checked');
+  const sifatCheckboxes = form.querySelectorAll('input[name="sifat_video"]:checked');
+  
+  if (kategoriCheckboxes.length === 0 || kategoriCheckboxes.length > 3) {
+      document.getElementById("kategori-error").classList.remove('hidden');
+      document.getElementById("kategori-error").textContent = "Anda harus memilih 1-3 kategori konten.";
+      setTimeout(() => document.getElementById("kategori-error").classList.add('hidden'), 3000);
+      return;
+  }
+  
+  if (sifatCheckboxes.length === 0 || sifatCheckboxes.length > 2) {
+      document.getElementById("sifat-error").classList.remove('hidden');
+      document.getElementById("sifat-error").textContent = "Anda harus memilih 1-2 sifat video.";
+      setTimeout(() => document.getElementById("sifat-error").classList.add('hidden'), 3000);
+      return;
+  }
+  // ---------------------------------------------
+
+  // UI Loading State
+  btn.disabled = true;
+  btn.innerHTML = "⏳ Mengirim...";
+  status.textContent = "";
+  status.className = "text-center text-sm font-medium text-blue-600 mt-4";
+
+  try {
+    const data = {};
+    
+    // Khusus untuk checkbox, ambil semua nilai dalam bentuk array
+    data.kategori_konten = Array.from(kategoriCheckboxes).map(c => c.value);
+    data.sifat_video = Array.from(sifatCheckboxes).map(c => c.value);
+
+    // Ambil data select
+    data.durasi_video = form.elements['durasi_video'].value;
+    data.format_video = form.elements['format_video'].value;
+    
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "submit", data })
+    });
+
+    // Sukses
+    status.textContent = "✅ Terima kasih! Jawaban Anda telah tersimpan.";
+    status.className = "text-center text-sm font-bold text-green-600 mt-4";
+    form.reset();
+
+  } catch (err) {
+    console.error(err);
+    status.textContent = "❌ Gagal mengirim. Periksa koneksi internet Anda.";
+    status.className = "text-center text-sm font-bold text-red-600 mt-4";
+  } finally {
+    // Kembalikan tombol ke semula setelah 2 detik
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = originalBtnText;
+    }, 2000);
+  }
+});
+</script>
+</body>
+</html>

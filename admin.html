@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Survei - Analisis K-Means</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-100 font-sans text-gray-900">
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <h1 class="text-3xl font-bold text-center mb-8 text-blue-900 border-b-4 border-blue-500 pb-4">
+      📊 Analisis Segmentasi Audiens TikTok (K-Means)
+    </h1>
+
+    <div id="login-section" class="max-w-sm mx-auto bg-white p-6 rounded-lg shadow-md">
+      <label class="block font-semibold text-gray-700 mb-2">🔑 Password Admin</label>
+      <input id="admin-password" type="password" class="w-full border-2 border-gray-300 p-2 rounded focus:border-blue-500 outline-none" placeholder="...">
+      <button id="load-data" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+        Masuk & Muat Data
+      </button>
+      <p id="status-message" class="text-center text-sm mt-4 font-medium"></p>
+    </div>
+
+    <div id="main-app" class="hidden space-y-6 mt-8">
+      
+      <div id="data-section" class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-gray-500">
+        <h2 class="text-lg font-bold mb-3 flex justify-between">
+          <span>📋 Data Survei Masuk</span>
+          <span id="data-count" class="text-sm bg-gray-100 px-2 py-1 rounded-full">0 Data</span>
+        </h2>
+        <div class="overflow-y-auto max-h-60 border">
+          <table id="data-table" class="min-w-full text-sm text-left"></table>
+        </div>
+      </div>
+
+      <div id="analysis-section" class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-600">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">⚙️ Metodologi Analisis</h2>
+        
+        <div class="mb-6">
+          <h3 class="font-bold text-blue-800 mb-2">Langkah 1: Tentukan 'k' Optimal (Elbow)</h3>
+          <button id="elbow-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
+            📈 Tampilkan Grafik Elbow
+          </button>
+          <div id="elbow-container" class="mt-4 hidden bg-gray-50 p-2 rounded border">
+             <canvas id="elbowChart" class="max-h-60"></canvas>
+          </div>
+        </div>
+
+        <div id="execution-step" class="hidden border-t pt-6">
+          <h3 class="font-bold text-green-800 mb-2">Langkah 2: Eksekusi Segmentasi</h3>
+          <div class="flex items-center space-x-3 mb-4">
+            <label class="font-semibold">Pilih Jumlah Klaster (k):</label>
+            <select id="k-optimal" class="border-2 border-green-500 p-1 rounded font-bold w-24 text-center"></select>
+          </div>
+          <button id="analyze-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded text-lg transition">
+            ▶️ JALANKAN ANALISIS FINAL
+          </button>
+        </div>
+      </div>
+
+      <div id="results-section" class="hidden bg-white p-6 rounded-lg shadow-md border-t-4 border-green-500">
+        <h2 class="text-2xl font-bold mb-6 text-center border-b pb-4">🎯 HASIL SEGMENTASI</h2>
+        
+        <div class="mb-8">
+          <h3 class="font-bold text-lg mb-2">A. Visualisasi Sebaran Klaster</h3>
+          <canvas id="scatterChart" class="max-h-96"></canvas>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-lg mb-4">B. Profil & Kesimpulan Klaster</h3>
+          <div id="result-text" class="space-y-4"></div>
+        </div>
+      </div>
+
+    </div> </div>
+
+  <script src="kmeans.js"></script>
+</body>
+</html>
