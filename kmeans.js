@@ -6,7 +6,7 @@
 const CONFIG = {
   // URL WEB APP BARU ANDA
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzYp9zSn8hyxfG-9x4CpUkR2acwxlcITyaL_n9QatUzjdexQGHwpIhK0brbTxoTIuaA/exec", 
-  // VARIABEL CLUSTERING BARU (20 variabel OHE)
+  // VARIABEL CLUSTERING BARU (20 variabel OHE: 18 OHE + 2 Durasi/Format)
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Mode", "Kategori_Gaming", 
     "Kategori_Berita", "Kategori_Olahraga", "Kategori_DIY", "Kategori_Musik", "Kategori_Mental", "Kategori_Travel",
@@ -178,6 +178,22 @@ function displaySimpleProfiling(k, assignments, centroids) {
   document.getElementById("result-text").innerHTML = html;
 }
 
+// FUNGSI INI SUDAH DIUPDATE UNTUK MENAMPILKAN DATA RAW TIKTOK
+function renderRawTable(data) {
+  const t = document.getElementById("data-table");
+  // Tampilkan hanya kolom yang relevan dari data TikTok
+  let h = `<thead class="bg-gray-100 sticky top-0"><tr><th class="p-2">Timestamp</th><th class="p-2">Durasi</th><th class="p-2">Format</th><th class="p-2">Kategori Raw</th><th class="p-2">Sifat Raw</th></tr></thead><tbody>`;
+  data.forEach(r => h+=`<tr class="border-t">
+    <td class="p-2">${r.timestamp.toLocaleDateString('id-ID')}</td>
+    <td class="p-2">${MAPPING.durasi[r.durasi_video]||r.durasi_video}</td>
+    <td class="p-2">${MAPPING.format[r.format_video]||r.format_video}</td>
+    <td class="p-2 font-bold text-blue-600">${r.kategori_raw}</td>
+    <td class="p-2 font-bold text-green-600">${r.sifat_raw}</td>
+  </tr>`);
+  t.innerHTML = h+"</tbody>";
+}
+
+
 function renderElbowChart(sse) {
   const ctx = document.getElementById("elbowChart").getContext("2d");
   if(elbowChartInstance) elbowChartInstance.destroy();
@@ -205,18 +221,4 @@ function renderScatterChart(data, assignments, k) {
       }
     } 
   });
-}
-
-function renderRawTable(data) {
-  const t = document.getElementById("data-table");
-  // Tampilkan hanya kolom yang ada di dataset baru
-  let h = `<thead class="bg-gray-100 sticky top-0"><tr><th class="p-2">Timestamp</th><th class="p-2">Durasi</th><th class="p-2">Format</th><th class="p-2">Kategori Raw</th><th class="p-2">Sifat Raw</th></tr></thead><tbody>`;
-  data.forEach(r => h+=`<tr class="border-t">
-    <td class="p-2">${r.timestamp.toLocaleDateString('id-ID')}</td>
-    <td class="p-2">${MAPPING.durasi[r.durasi_video]||r.durasi_video}</td>
-    <td class="p-2">${MAPPING.format[r.format_video]||r.format_video}</td>
-    <td class="p-2 font-bold text-blue-600">${r.kategori_raw}</td>
-    <td class="p-2 font-bold text-green-600">${r.sifat_raw}</td>
-  </tr>`);
-  t.innerHTML = h+"</tbody>";
 }
