@@ -181,15 +181,41 @@ function displaySimpleProfiling(k, assignments, centroids) {
 // FUNGSI INI SUDAH DIUPDATE UNTUK MENAMPILKAN DATA RAW TIKTOK
 function renderRawTable(data) {
   const t = document.getElementById("data-table");
-  // Tampilkan hanya kolom yang relevan dari data TikTok
+  
+  // Pastikan elemen tabel ditemukan
+  if (!t) {
+    console.error("Elemen tabel data mentah (id=data-table) tidak ditemukan.");
+    return;
+  }
+
+  // Header tabel (sama seperti admin.html)
   let h = `<thead class="bg-gray-100 sticky top-0"><tr><th class="p-2">Timestamp</th><th class="p-2">Durasi</th><th class="p-2">Format</th><th class="p-2">Kategori Raw</th><th class="p-2">Sifat Raw</th></tr></thead><tbody>`;
-  data.forEach(r => h+=`<tr class="border-t">
-    <td class="p-2">${r.timestamp.toLocaleDateString('id-ID')}</td>
-    <td class="p-2">${MAPPING.durasi[r.durasi_video]||r.durasi_video}</td>
-    <td class="p-2">${MAPPING.format[r.format_video]||r.format_video}</td>
-    <td class="p-2 font-bold text-blue-600">${r.kategori_raw}</td>
-    <td class="p-2 font-bold text-green-600">${r.sifat_raw}</td>
-  </tr>`);
+  
+  // Tambahkan data
+  data.forEach(r => {
+    // 1. Pemrosesan Timestamp yang Aman: 
+    // Jika r.timestamp adalah objek Date/string, konversi ke format string yang dapat dibaca
+    let timestampStr = r.timestamp instanceof Date 
+                       ? r.timestamp.toLocaleDateString('id-ID', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                       : String(r.timestamp);
+
+    // 2. Data Durasi dan Format: Gunakan MAPPING (pastikan nilainya tidak null/undefined)
+    const durasi = MAPPING.durasi[String(r.durasi_video)] || String(r.durasi_video);
+    const format = MAPPING.format[String(r.format_video)] || String(r.format_video);
+    
+    // 3. Data Raw: Pastikan kolom raw diambil
+    const kategoriRaw = r.kategori_raw || '-';
+    const sifatRaw = r.sifat_raw || '-';
+
+    h +=`<tr class="border-t">
+      <td class="p-2">${timestampStr}</td>
+      <td class="p-2">${durasi}</td>
+      <td class="p-2">${format}</td>
+      <td class="p-2 font-bold text-blue-600">${kategoriRaw}</td>
+      <td class="p-2 font-bold text-green-600">${sifatRaw}</td>
+    </tr>`;
+  });
+
   t.innerHTML = h+"</tbody>";
 }
 
