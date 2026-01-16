@@ -8,7 +8,6 @@ const CONFIG_K = {
   ]
 };
 
-// UPDATE: Pemetaan label untuk tampilan admin
 const MAPPING = {
   durasi: { "1": "< 15 detik", "2": "15-30 detik", "3": "30-60 detik", "4": "> 60 detik" },
   format: { "1": "Video Vertical", "2": "Kolase", "3": "Live" }
