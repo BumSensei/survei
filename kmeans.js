@@ -1,9 +1,9 @@
 const CONFIG_K = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxFj17_Wk7ui_-E36xHSZwjF_gj5sqvPCgLqhCiz1tCGhXQLfdixI_cQ_mPdGeleJ2v/exec",
   CLUSTERING_VARS: [
-    "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", "Kategori_Gaming", 
-    "Kategori_Berita", "Kategori_Olahraga", "Kategori_DIY", "Kategori_Musik", "Kategori_Mental", "Kategori_Travel",
-    "Sifat_Fakta", "Sifat_Hiburan", "Sifat_Relaksasi", "Sifat_Inspirasi", "Sifat_Narasi", "Sifat_Skill", "Sifat_Estetik",
+    "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
+    "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
+    "Sifat_Fakta", "Sifat_Hiburan", "Sifat_Inspirasi", "Sifat_Estetik",
     "durasi_video", "format_video"
   ]
 };
