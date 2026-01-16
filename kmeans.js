@@ -1,6 +1,5 @@
 const CONFIG_K = {
-  // Ganti dengan URL Web App Apps Script Anda
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsnhOY39niKL2QWGlBSXrrtb_9weikogUk_59anxkvPpsxFr9d8M1pS5PQ06SmPQQw/exec",
+  APPS_SCRIPT_URL: "URL_WEB_APP_ANDA",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
@@ -45,7 +44,6 @@ function kmeans(data, k, maxIter = 50) {
 
 document.getElementById("load-data")?.addEventListener("click", async () => {
   const pw = document.getElementById("admin-password").value;
-  const status = document.getElementById("status-message");
   try {
     const res = await fetch(`${CONFIG_K.APPS_SCRIPT_URL}?action=get_all&pw=${pw}`);
     const json = await res.json();
@@ -59,7 +57,7 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
     document.getElementById("main-app").classList.remove("hidden");
     const opt = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
     document.getElementById("select-x").innerHTML = opt; document.getElementById("select-y").innerHTML = opt;
-  } catch (e) { status.textContent = "Gagal memuat data."; }
+  } catch (e) { document.getElementById("status-message").textContent = "Gagal memuat data."; }
 });
 
 document.getElementById("elbow-btn")?.addEventListener("click", () => {
@@ -82,16 +80,13 @@ document.getElementById("analyze-btn")?.addEventListener("click", () => {
   renderScatter(); renderSummary();
 });
 
-document.getElementById("select-x").onchange = renderScatter;
-document.getElementById("select-y").onchange = renderScatter;
-
 function renderElbowChart(sse) {
   const ctx = document.getElementById("elbowChart");
   if (elbowChartInstance) elbowChartInstance.destroy();
   elbowChartInstance = new Chart(ctx, {
     type: 'line',
     data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE', data: sse, borderColor: '#3B82F6', fill: false }] },
-    options: { responsive: true, maintainAspectRatio: false } 
+    options: { responsive: true, maintainAspectRatio: false }
   });
 }
 
@@ -105,19 +100,10 @@ function renderScatter() {
   const ds = Array.from({length: k}, (_, i) => ({
     label: `Cluster ${i+1}`,
     data: clusteringData.filter((_, idx) => currentAssignments[idx] === i).map(p => ({x: p[iX], y: p[iY]})),
-    backgroundColor: `hsl(${i * 360/k}, 70%, 50%)`,
-    pointRadius: 4
+    backgroundColor: `hsl(${i * 360/k}, 70%, 50%)`
   }));
   
-  // Dataset Centroid (Pusat Massa)
-  ds.push({ 
-    label: 'PUSAT KLASTER (CENTROID)', 
-    data: currentCentroids.map(c => ({x: c[iX], y: c[iY]})), 
-    backgroundColor: '#000', 
-    pointStyle: 'crossRot', 
-    pointRadius: 12,
-    borderWidth: 3
-  });
+  ds.push({ label: 'CENTROID', data: currentCentroids.map(c => ({x: c[iX], y: c[iY]})), backgroundColor: '#000', pointStyle: 'crossRot', pointRadius: 10 });
 
   scatterChartInstance = new Chart(ctx, {
     type: 'scatter',
@@ -137,19 +123,26 @@ function renderSummary() {
   container.innerHTML = "";
   for (let i = 0; i < currentCentroids.length; i++) {
     const pts = rawData.filter((_, idx) => currentAssignments[idx] === i);
+    const total = pts.length;
     let html = `<div class="p-4 border-2 rounded-lg bg-white shadow-sm border-blue-100">
-      <h4 class="font-bold text-blue-900 border-b mb-2">Klaster ${i+1} (n=${pts.length})</h4>
-      <div class="text-xs space-y-1">`;
+      <h4 class="font-bold text-blue-900 border-b mb-2">Klaster ${i+1} (n=${total})</h4>
+      <div class="text-[10px] space-y-2">`;
     
     CONFIG_K.CLUSTERING_VARS.forEach(v => {
-      const avg = pts.reduce((s, c) => s + parseFloat(c[v]||0), 0) / pts.length;
-      // Menampilkan karakteristik dominan (>40%)
-      if (avg > 0.4) {
-          let label = v.replace('Kategori_','').replace('Sifat_','');
-          let val = (avg*100).toFixed(0) + "%";
-          if(v === "durasi_video") val = MAPPING.durasi[Math.round(avg)];
-          if(v === "format_video") val = MAPPING.format[Math.round(avg)];
-          html += `<div class="flex justify-between"><span>${label}:</span><span class="font-bold text-blue-600">${val}</span></div>`;
+      if (v.startsWith('Kategori_') || v.startsWith('Sifat_')) {
+        const avg = pts.reduce((s, c) => s + parseFloat(c[v]||0), 0) / total;
+        if (avg > 0.4) html += `<div class="flex justify-between"><span>${v.replace('Kategori_','').replace('Sifat_','')}</span><span class="font-bold text-blue-600">${(avg*100).toFixed(0)}%</span></div>`;
+      } else {
+        const counts = {};
+        pts.forEach(p => counts[p[v]] = (counts[p[v]] || 0) + 1);
+        const mapKey = v.split('_')[0];
+        const labels = MAPPING[mapKey];
+        let detail = `<div class="bg-gray-50 p-1 rounded mt-1">`;
+        Object.keys(labels).forEach(key => {
+          const pct = ((counts[key] || 0) / total * 100).toFixed(0);
+          if (pct > 0) detail += `<div class="flex justify-between"><span>${labels[key]}</span><span>${pct}%</span></div>`;
+        });
+        html += `<div class="mt-2"><span class="font-bold text-gray-500 uppercase text-[8px]">${v.replace('_',' ')}:</span>${detail}</div></div>`;
       }
     });
     container.innerHTML += html + `</div></div>`;
