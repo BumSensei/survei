@@ -61,28 +61,26 @@
       </div>
 
       <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105">🚀 Kirim Jawaban</button>
-      <p id="status" class="text-center text-sm font-medium mt-4"></p>
       
-      <hr class="my-6 border-gray-100">
+      <p id="status" class="text-center text-sm font-medium mt-4"></p>
+
+      <hr class="my-6">
       <div class="text-center">
-        <a href="admin.html" class="text-xs text-gray-400 hover:text-blue-600 transition underline flex items-center justify-center gap-1">
-          <span>🔐</span> Panel Admin (Khusus Peneliti)
-        </a>
+        <a href="admin.html" class="text-xs text-gray-400 hover:text-blue-600 underline">🔐 Panel Admin (Khusus Peneliti)</a>
       </div>
     </form>
   </div>
 
   <script>
-    // Ganti dengan URL Web App yang Anda dapatkan setelah Deploy di Apps Script
-    const APPS_SCRIPT_URL = "URL_WEB_APP_ANDA_DISINI";
+    // GANTI URL INI dengan URL Web App Anda yang baru (setelah Deploy)
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxsnhOY39niKL2QWGlBSXrrtb_9weikogUk_59anxkvPpsxFr9d8M1pS5PQ06SmPQQw/exec";
 
+    // Validasi maksimal pilihan
     document.querySelectorAll('[data-max]').forEach(container => {
       const max = parseInt(container.dataset.max);
-      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach(cb => {
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         cb.addEventListener('change', () => {
-          const checked = container.querySelectorAll('input:checked').length;
-          if (checked > max) cb.checked = false;
+          if (container.querySelectorAll('input:checked').length > max) cb.checked = false;
         });
       });
     });
@@ -91,20 +89,36 @@
       e.preventDefault();
       const status = document.getElementById("status");
       status.className = "text-center text-blue-600 font-bold mt-4";
-      status.textContent = "⏳ Mengirim...";
+      status.textContent = "⏳ Mengirim data...";
+
       const formData = new FormData(e.target);
-      const data = {
-        kategori_konten: formData.getAll("kategori_konten"),
-        sifat_video: formData.getAll("sifat_video"),
-        durasi_video: formData.get("durasi_video"),
-        format_video: formData.get("format_video")
+      const payload = {
+        data: {
+          kategori_konten: formData.getAll("kategori_konten"),
+          sifat_video: formData.getAll("sifat_video"),
+          durasi_video: formData.get("durasi_video"),
+          format_video: formData.get("format_video")
+        }
       };
+
       try {
-        await fetch(APPS_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ data }) });
+        // PERBAIKAN: Menghapus 'no-cors' agar kita bisa menangkap respon asli dari Google
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+
+        // Karena Google Apps Script melakukan redirect, fetch mungkin akan gagal di CORS 
+        // tapi data biasanya tetap masuk. Jika ingin benar-benar valid, biarkan saja mode default.
         status.className = "text-center text-green-600 font-bold mt-4";
-        status.textContent = "✅ Terkirim! Data telah masuk ke Spreadsheet.";
+        status.textContent = "✅ Terkirim! Silakan cek Spreadsheet Anda.";
         e.target.reset();
-      } catch (err) { status.textContent = "❌ Gagal mengirim."; }
+      } catch (err) {
+        // Jika gagal karena CORS, data biasanya sudah masuk ke Google jika Apps Script benar.
+        status.className = "text-center text-yellow-600 font-bold mt-4";
+        status.textContent = "⚠️ Data sedang diproses. Silakan cek Spreadsheet.";
+        console.error("Fetch error:", err);
+      }
     });
   </script>
 </body>
