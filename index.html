@@ -15,21 +15,21 @@
 
     <form id="survey-form" class="space-y-6">
       <div>
-        <label class="block font-bold mb-2 text-gray-700">1. Kategori Konten yang Sering Anda Tonton (Pilih Max 3):</label>
+        <label class="block font-bold mb-2 text-gray-700">1. Kategori Konten yang Sering Anda Tonton (Max 3):</label>
         <div class="grid grid-cols-2 gap-2 p-3 border-2 rounded bg-gray-50" data-max="3">
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Komedi"><span>Komedi</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Edukasi"><span>Edukasi</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Makanan"><span>Makanan</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Kecantikan"><span>Kecantikan</span></label>
-          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Musik"><span>Musik/Tarian</span></label>
+          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Musik"><span>Musik</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Gaming"><span>Gaming</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Berita"><span>Berita</span></label>
-          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Travel"><span>Travel/Vlog</span></label>
+          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Travel"><span>Travel</span></label>
         </div>
       </div>
 
       <div>
-        <label class="block font-bold mb-2 text-gray-700">2. Apa yang Paling Anda Cari? (Pilih Max 2):</label>
+        <label class="block font-bold mb-2 text-gray-700">2. Apa yang Paling Anda Cari? (Max 2):</label>
         <div class="grid grid-cols-2 gap-2 p-3 border-2 rounded bg-gray-50" data-max="2">
           <label class="flex items-center space-x-2"><input type="checkbox" name="sifat_video" value="Fakta"><span>Informasi</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="sifat_video" value="Hiburan"><span>Hiburan</span></label>
@@ -41,7 +41,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block font-bold mb-1">3. Durasi Video Favorit:</label>
-          <select name="durasi_video" required class="w-full border-2 p-3 rounded bg-white">
+          <select name="durasi_video" required class="w-full border-2 p-3 rounded">
             <option value="">-- Pilih --</option>
             <option value="1">< 15 detik</option>
             <option value="2">15-30 detik</option>
@@ -51,7 +51,7 @@
         </div>
         <div>
           <label class="block font-bold mb-1">4. Format Konten:</label>
-          <select name="format_video" required class="w-full border-2 p-3 rounded bg-white">
+          <select name="format_video" required class="w-full border-2 p-3 rounded">
             <option value="">-- Pilih --</option>
             <option value="1">Video Vertical</option>
             <option value="2">Kolase</option>
