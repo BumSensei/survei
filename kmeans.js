@@ -84,6 +84,7 @@ document.getElementById("analyze-btn")?.addEventListener("click", () => {
   currentCentroids = centroids;
   document.getElementById("results-section").classList.remove("hidden");
   renderScatter();
+  renderClusterSummary(); // Fungsi baru untuk skripsi
 });
 
 document.getElementById("select-x")?.addEventListener("change", renderScatter);
@@ -94,7 +95,7 @@ function renderElbowChart(sse) {
   if (elbowChartInstance) elbowChartInstance.destroy();
   elbowChartInstance = new Chart(ctx, {
     type: 'line',
-    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE', data: sse, borderColor: '#3B82F6', fill: false }] }
+    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE (Sum of Squared Errors)', data: sse, borderColor: '#3B82F6', fill: false }] }
   });
 }
 
@@ -105,16 +106,75 @@ function renderScatter() {
   const varY = document.getElementById("select-y").value;
   const idxX = CONFIG_K.CLUSTERING_VARS.indexOf(varX);
   const idxY = CONFIG_K.CLUSTERING_VARS.indexOf(varY);
-  const k = parseInt(document.getElementById("k-optimal").value);
+  const k = currentCentroids.length;
+
+  // Dataset untuk titik data
+  const datasets = Array.from({length: k}, (_, i) => ({
+    label: `Cluster ${i+1}`,
+    data: clusteringData.filter((_, idx) => currentAssignments[idx] === i).map(p => ({x: p[idxX], y: p[idxY]})),
+    backgroundColor: `hsl(${i * 360/k}, 70%, 50%)`,
+    pointRadius: 5
+  }));
+
+  // Dataset untuk Centroids (Pusat Klaster)
+  datasets.push({
+    label: 'CENTROIDS',
+    data: currentCentroids.map(c => ({x: c[idxX], y: c[idxY]})),
+    backgroundColor: '#000',
+    pointStyle: 'crossRot',
+    pointRadius: 10,
+    borderWidth: 2,
+    showLine: false
+  });
+
   scatterChartInstance = new Chart(ctx, {
     type: 'scatter',
-    data: {
-      datasets: Array.from({length: k}, (_, i) => ({
-        label: `Cluster ${i+1}`,
-        data: clusteringData.filter((_, idx) => currentAssignments[idx] === i).map(p => ({x: p[idxX], y: p[idxY]})),
-        backgroundColor: `hsl(${i * 360/k}, 70%, 50%)`
-      }))
-    },
-    options: { scales: { xAxes: [{ticks: {min:0, max:1}}], yAxes: [{ticks: {min:0, max:1}}] } }
+    data: { datasets },
+    options: { 
+      scales: { 
+        xAxes: [{ scaleLabel: { display: true, labelString: varX }, ticks: {min:0, max:1} }], 
+        yAxes: [{ scaleLabel: { display: true, labelString: varY }, ticks: {min:0, max:1} }] 
+      }
+    }
   });
+}
+
+function renderClusterSummary() {
+  const container = document.getElementById("result-text");
+  container.innerHTML = "";
+  const k = currentCentroids.length;
+
+  for (let i = 0; i < k; i++) {
+    const pointsInCluster = rawData.filter((_, idx) => currentAssignments[idx] === i);
+    const count = pointsInCluster.length;
+    
+    let html = `<div class="p-4 border-2 rounded-lg shadow-sm bg-white border-blue-200">
+      <h4 class="font-bold text-lg text-blue-900 border-b-2 border-blue-100 mb-3">Klaster ${i + 1} (n=${count})</h4>
+      <div class="space-y-2 text-sm">`;
+
+    CONFIG_K.CLUSTERING_VARS.forEach(variable => {
+      const sum = pointsInCluster.reduce((acc, curr) => acc + parseFloat(curr[variable] || 0), 0);
+      const avg = sum / count;
+      
+      let displayValue = "";
+      if (variable.startsWith("Kategori_") || variable.startsWith("Sifat_")) {
+          displayValue = (avg * 100).toFixed(0) + "% memilih";
+      } else if (variable === "durasi_video") {
+          displayValue = MAPPING.durasi[Math.round(avg)] || "Campuran";
+      } else if (variable === "format_video") {
+          displayValue = MAPPING.format[Math.round(avg)] || "Campuran";
+      }
+
+      // Tampilkan hanya karakteristik yang dominan (>40%) atau variabel penting
+      if (avg > 0.4 || !variable.includes("_")) {
+          html += `<div class="flex justify-between">
+            <span class="text-gray-600">${variable.replace(/Kategori_|Sifat_/, '').replace(/_/g, ' ')}:</span>
+            <span class="font-semibold text-blue-700">${displayValue}</span>
+          </div>`;
+      }
+    });
+
+    html += `</div></div>`;
+    container.innerHTML += html;
+  }
 }
