@@ -51,6 +51,7 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
     if (json.status !== "ok") throw new Error(json.message);
     rawData = json.data;
 
+    // MIN-MAX SCALING
     const numericRaw = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
     const mins = Array(CONFIG_K.CLUSTERING_VARS.length).fill(Infinity);
     const maxs = Array(CONFIG_K.CLUSTERING_VARS.length).fill(-Infinity);
@@ -59,7 +60,7 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
 
     document.getElementById("login-section").classList.add("hidden");
     document.getElementById("main-app").classList.remove("hidden");
-    const axesOptions = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v.replace(/_/g, ' ')}</option>`).join("");
+    const axesOptions = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
     document.getElementById("select-x").innerHTML = axesOptions;
     document.getElementById("select-y").innerHTML = axesOptions;
   } catch (e) { status.textContent = "Gagal memuat data."; }
@@ -94,7 +95,7 @@ function renderElbowChart(sse) {
   if (elbowChartInstance) elbowChartInstance.destroy();
   elbowChartInstance = new Chart(ctx, {
     type: 'line',
-    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE (Inersia)', data: sse, borderColor: '#3B82F6', fill: false }] }
+    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE', data: sse, borderColor: '#3B82F6', fill: false }] }
   });
 }
 
@@ -106,7 +107,6 @@ function renderScatter() {
   const idxX = CONFIG_K.CLUSTERING_VARS.indexOf(varX);
   const idxY = CONFIG_K.CLUSTERING_VARS.indexOf(varY);
   const k = parseInt(document.getElementById("k-optimal").value);
-
   scatterChartInstance = new Chart(ctx, {
     type: 'scatter',
     data: {
