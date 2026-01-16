@@ -1,11 +1,17 @@
 const CONFIG_K = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxFj17_Wk7ui_-E36xHSZwjF_gj5sqvPCgLqhCiz1tCGhXQLfdixI_cQ_mPdGeleJ2v/exec",
   CLUSTERING_VARS: [
-    "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Mode", "Kategori_Gaming", 
+    "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", "Kategori_Gaming", 
     "Kategori_Berita", "Kategori_Olahraga", "Kategori_DIY", "Kategori_Musik", "Kategori_Mental", "Kategori_Travel",
     "Sifat_Fakta", "Sifat_Hiburan", "Sifat_Relaksasi", "Sifat_Inspirasi", "Sifat_Narasi", "Sifat_Skill", "Sifat_Estetik",
     "durasi_video", "format_video"
   ]
+};
+
+// UPDATE: Pemetaan label untuk tampilan admin
+const MAPPING = {
+  durasi: { "1": "< 15 detik", "2": "15-30 detik", "3": "30-60 detik", "4": "> 60 detik" },
+  format: { "1": "Video Vertical", "2": "Kolase", "3": "Live" }
 };
 
 let rawData = [], clusteringData = [], currentAssignments = [], currentCentroids = [];
@@ -46,7 +52,6 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
     if (json.status !== "ok") throw new Error(json.message);
     rawData = json.data;
 
-    // MIN-MAX SCALING
     const numericRaw = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
     const mins = Array(CONFIG_K.CLUSTERING_VARS.length).fill(Infinity);
     const maxs = Array(CONFIG_K.CLUSTERING_VARS.length).fill(-Infinity);
@@ -55,10 +60,9 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
 
     document.getElementById("login-section").classList.add("hidden");
     document.getElementById("main-app").classList.remove("hidden");
-    const axesOptions = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
+    const axesOptions = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v.replace(/_/g, ' ')}</option>`).join("");
     document.getElementById("select-x").innerHTML = axesOptions;
     document.getElementById("select-y").innerHTML = axesOptions;
-    document.getElementById("select-y").selectedIndex = 1;
   } catch (e) { status.textContent = "Gagal memuat data."; }
 });
 
@@ -91,7 +95,7 @@ function renderElbowChart(sse) {
   if (elbowChartInstance) elbowChartInstance.destroy();
   elbowChartInstance = new Chart(ctx, {
     type: 'line',
-    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'Inersia (SSE)', data: sse, borderColor: '#3B82F6', fill: false }] }
+    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE (Inersia)', data: sse, borderColor: '#3B82F6', fill: false }] }
   });
 }
 
