@@ -1,5 +1,5 @@
 const CONFIG_K = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxFj17_Wk7ui_-E36xHSZwjF_gj5sqvPCgLqhCiz1tCGhXQLfdixI_cQ_mPdGeleJ2v/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsnhOY39niKL2QWGlBSXrrtb_9weikogUk_59anxkvPpsxFr9d8M1pS5PQ06SmPQQw/exec",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
@@ -51,7 +51,6 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
     if (json.status !== "ok") throw new Error(json.message);
     rawData = json.data;
 
-    // MIN-MAX SCALING
     const numericRaw = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
     const mins = Array(CONFIG_K.CLUSTERING_VARS.length).fill(Infinity);
     const maxs = Array(CONFIG_K.CLUSTERING_VARS.length).fill(-Infinity);
