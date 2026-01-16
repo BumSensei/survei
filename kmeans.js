@@ -1,4 +1,5 @@
 const CONFIG_K = {
+  // Ganti dengan URL Web App Apps Script Anda
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsnhOY39niKL2QWGlBSXrrtb_9weikogUk_59anxkvPpsxFr9d8M1pS5PQ06SmPQQw/exec",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
@@ -9,8 +10,8 @@ const CONFIG_K = {
 };
 
 const MAPPING = {
-  durasi: { "1": "< 15 detik", "2": "15-30 detik", "3": "30-60 detik", "4": "> 60 detik" },
-  format: { "1": "Video Vertical", "2": "Kolase", "3": "Live" }
+  durasi: { "1": "< 15s", "2": "15-30s", "3": "30-60s", "4": "> 60s" },
+  format: { "1": "Vertical", "2": "Kolase", "3": "Live" }
 };
 
 let rawData = [], clusteringData = [], currentAssignments = [], currentCentroids = [];
@@ -48,28 +49,24 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
   try {
     const res = await fetch(`${CONFIG_K.APPS_SCRIPT_URL}?action=get_all&pw=${pw}`);
     const json = await res.json();
-    if (json.status !== "ok") throw new Error(json.message);
+    if (json.status !== "ok") throw new Error();
     rawData = json.data;
-
-    const numericRaw = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
-    const mins = Array(CONFIG_K.CLUSTERING_VARS.length).fill(Infinity);
-    const maxs = Array(CONFIG_K.CLUSTERING_VARS.length).fill(-Infinity);
-    numericRaw.forEach(p => p.forEach((v, i) => { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }));
-    clusteringData = numericRaw.map(p => p.map((v, i) => (v - mins[i]) / ((maxs[i] - mins[i]) || 1)));
-
+    const numeric = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
+    const mins = Array(14).fill(Infinity), maxs = Array(14).fill(-Infinity);
+    numeric.forEach(p => p.forEach((v, i) => { mins[i]=Math.min(mins[i],v); maxs[i]=Math.max(maxs[i],v); }));
+    clusteringData = numeric.map(p => p.map((v, i) => (v - mins[i]) / ((maxs[i] - mins[i]) || 1)));
     document.getElementById("login-section").classList.add("hidden");
     document.getElementById("main-app").classList.remove("hidden");
-    const axesOptions = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
-    document.getElementById("select-x").innerHTML = axesOptions;
-    document.getElementById("select-y").innerHTML = axesOptions;
+    const opt = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
+    document.getElementById("select-x").innerHTML = opt; document.getElementById("select-y").innerHTML = opt;
   } catch (e) { status.textContent = "Gagal memuat data."; }
 });
 
 document.getElementById("elbow-btn")?.addEventListener("click", () => {
   const sse = [];
   for (let k=1; k<=8; k++) {
-    const {centroids, assignments} = kmeans(clusteringData, k);
-    sse.push(clusteringData.reduce((sum, p, i) => sum + Math.pow(euclidean(p, centroids[assignments[i]]), 2), 0));
+    const res = kmeans(clusteringData, k);
+    sse.push(clusteringData.reduce((s, p, i) => s + Math.pow(euclidean(p, res.centroids[res.assignments[i]]), 2), 0));
   }
   renderElbowChart(sse);
   document.getElementById("elbow-container").classList.remove("hidden");
@@ -79,102 +76,82 @@ document.getElementById("elbow-btn")?.addEventListener("click", () => {
 
 document.getElementById("analyze-btn")?.addEventListener("click", () => {
   const k = parseInt(document.getElementById("k-optimal").value);
-  const { centroids, assignments } = kmeans(clusteringData, k);
-  currentAssignments = assignments;
-  currentCentroids = centroids;
+  const res = kmeans(clusteringData, k);
+  currentAssignments = res.assignments; currentCentroids = res.centroids;
   document.getElementById("results-section").classList.remove("hidden");
-  renderScatter();
-  renderClusterSummary(); // Fungsi baru untuk skripsi
+  renderScatter(); renderSummary();
 });
 
-document.getElementById("select-x")?.addEventListener("change", renderScatter);
-document.getElementById("select-y")?.addEventListener("change", renderScatter);
+document.getElementById("select-x").onchange = renderScatter;
+document.getElementById("select-y").onchange = renderScatter;
 
 function renderElbowChart(sse) {
   const ctx = document.getElementById("elbowChart");
   if (elbowChartInstance) elbowChartInstance.destroy();
   elbowChartInstance = new Chart(ctx, {
     type: 'line',
-    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE (Sum of Squared Errors)', data: sse, borderColor: '#3B82F6', fill: false }] }
+    data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ label: 'SSE', data: sse, borderColor: '#3B82F6', fill: false }] },
+    options: { responsive: true, maintainAspectRatio: false } 
   });
 }
 
 function renderScatter() {
   const ctx = document.getElementById("scatterChart");
   if (scatterChartInstance) scatterChartInstance.destroy();
-  const varX = document.getElementById("select-x").value;
-  const varY = document.getElementById("select-y").value;
-  const idxX = CONFIG_K.CLUSTERING_VARS.indexOf(varX);
-  const idxY = CONFIG_K.CLUSTERING_VARS.indexOf(varY);
+  const vX = document.getElementById("select-x").value, vY = document.getElementById("select-y").value;
+  const iX = CONFIG_K.CLUSTERING_VARS.indexOf(vX), iY = CONFIG_K.CLUSTERING_VARS.indexOf(vY);
   const k = currentCentroids.length;
-
-  // Dataset untuk titik data
-  const datasets = Array.from({length: k}, (_, i) => ({
+  
+  const ds = Array.from({length: k}, (_, i) => ({
     label: `Cluster ${i+1}`,
-    data: clusteringData.filter((_, idx) => currentAssignments[idx] === i).map(p => ({x: p[idxX], y: p[idxY]})),
+    data: clusteringData.filter((_, idx) => currentAssignments[idx] === i).map(p => ({x: p[iX], y: p[iY]})),
     backgroundColor: `hsl(${i * 360/k}, 70%, 50%)`,
-    pointRadius: 5
+    pointRadius: 4
   }));
-
-  // Dataset untuk Centroids (Pusat Klaster)
-  datasets.push({
-    label: 'CENTROIDS',
-    data: currentCentroids.map(c => ({x: c[idxX], y: c[idxY]})),
-    backgroundColor: '#000',
-    pointStyle: 'crossRot',
-    pointRadius: 10,
-    borderWidth: 2,
-    showLine: false
+  
+  // Dataset Centroid (Pusat Massa)
+  ds.push({ 
+    label: 'PUSAT KLASTER (CENTROID)', 
+    data: currentCentroids.map(c => ({x: c[iX], y: c[iY]})), 
+    backgroundColor: '#000', 
+    pointStyle: 'crossRot', 
+    pointRadius: 12,
+    borderWidth: 3
   });
 
   scatterChartInstance = new Chart(ctx, {
     type: 'scatter',
-    data: { datasets },
+    data: { datasets: ds },
     options: { 
+      responsive: true, maintainAspectRatio: false,
       scales: { 
-        xAxes: [{ scaleLabel: { display: true, labelString: varX }, ticks: {min:0, max:1} }], 
-        yAxes: [{ scaleLabel: { display: true, labelString: varY }, ticks: {min:0, max:1} }] 
+        xAxes: [{ scaleLabel: {display:true, labelString: vX}, ticks: {min:0, max:1} }], 
+        yAxes: [{ scaleLabel: {display:true, labelString: vY}, ticks: {min:0, max:1} }] 
       }
     }
   });
 }
 
-function renderClusterSummary() {
+function renderSummary() {
   const container = document.getElementById("result-text");
   container.innerHTML = "";
-  const k = currentCentroids.length;
-
-  for (let i = 0; i < k; i++) {
-    const pointsInCluster = rawData.filter((_, idx) => currentAssignments[idx] === i);
-    const count = pointsInCluster.length;
+  for (let i = 0; i < currentCentroids.length; i++) {
+    const pts = rawData.filter((_, idx) => currentAssignments[idx] === i);
+    let html = `<div class="p-4 border-2 rounded-lg bg-white shadow-sm border-blue-100">
+      <h4 class="font-bold text-blue-900 border-b mb-2">Klaster ${i+1} (n=${pts.length})</h4>
+      <div class="text-xs space-y-1">`;
     
-    let html = `<div class="p-4 border-2 rounded-lg shadow-sm bg-white border-blue-200">
-      <h4 class="font-bold text-lg text-blue-900 border-b-2 border-blue-100 mb-3">Klaster ${i + 1} (n=${count})</h4>
-      <div class="space-y-2 text-sm">`;
-
-    CONFIG_K.CLUSTERING_VARS.forEach(variable => {
-      const sum = pointsInCluster.reduce((acc, curr) => acc + parseFloat(curr[variable] || 0), 0);
-      const avg = sum / count;
-      
-      let displayValue = "";
-      if (variable.startsWith("Kategori_") || variable.startsWith("Sifat_")) {
-          displayValue = (avg * 100).toFixed(0) + "% memilih";
-      } else if (variable === "durasi_video") {
-          displayValue = MAPPING.durasi[Math.round(avg)] || "Campuran";
-      } else if (variable === "format_video") {
-          displayValue = MAPPING.format[Math.round(avg)] || "Campuran";
-      }
-
-      // Tampilkan hanya karakteristik yang dominan (>40%) atau variabel penting
-      if (avg > 0.4 || !variable.includes("_")) {
-          html += `<div class="flex justify-between">
-            <span class="text-gray-600">${variable.replace(/Kategori_|Sifat_/, '').replace(/_/g, ' ')}:</span>
-            <span class="font-semibold text-blue-700">${displayValue}</span>
-          </div>`;
+    CONFIG_K.CLUSTERING_VARS.forEach(v => {
+      const avg = pts.reduce((s, c) => s + parseFloat(c[v]||0), 0) / pts.length;
+      // Menampilkan karakteristik dominan (>40%)
+      if (avg > 0.4) {
+          let label = v.replace('Kategori_','').replace('Sifat_','');
+          let val = (avg*100).toFixed(0) + "%";
+          if(v === "durasi_video") val = MAPPING.durasi[Math.round(avg)];
+          if(v === "format_video") val = MAPPING.format[Math.round(avg)];
+          html += `<div class="flex justify-between"><span>${label}:</span><span class="font-bold text-blue-600">${val}</span></div>`;
       }
     });
-
-    html += `</div></div>`;
-    container.innerHTML += html;
+    container.innerHTML += html + `</div></div>`;
   }
 }
