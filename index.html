@@ -62,10 +62,18 @@
 
       <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105">🚀 Kirim Jawaban</button>
       <p id="status" class="text-center text-sm font-medium mt-4"></p>
+      
+      <hr class="my-6 border-gray-100">
+      <div class="text-center">
+        <a href="admin.html" class="text-xs text-gray-400 hover:text-blue-600 transition underline flex items-center justify-center gap-1">
+          <span>🔐</span> Panel Admin (Khusus Peneliti)
+        </a>
+      </div>
     </form>
   </div>
 
   <script>
+    // Ganti dengan URL Web App yang Anda dapatkan setelah Deploy di Apps Script
     const APPS_SCRIPT_URL = "URL_WEB_APP_ANDA_DISINI";
 
     document.querySelectorAll('[data-max]').forEach(container => {
