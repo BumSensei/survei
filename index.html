@@ -10,32 +10,32 @@
   <div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg border">
     <div class="text-center mb-10">
       <h1 class="text-3xl font-bold text-blue-900">📋 Survei Audiens TikTok</h1>
-      <p class="text-gray-500 italic">Analisis Segmentasi Warga Medan</p>
+      <p class="text-gray-500 italic">Segmentasi Warga Kota Medan</p>
     </div>
 
     <form id="survey-form" class="space-y-6">
       <div>
-        <label class="block font-bold mb-2 text-gray-700">1. Kategori Konten yang Sering Anda Tonton (Max 3):</label>
+        <label class="block font-bold mb-2 text-gray-700">1. Kategori Konten yang Sering Anda Tonton (Pilih Max 3):</label>
         <div class="grid grid-cols-2 gap-2 p-3 border-2 rounded bg-gray-50" data-max="3">
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Komedi"><span>Komedi</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Edukasi"><span>Edukasi</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Makanan"><span>Makanan</span></label>
-          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Mode"><span>Mode</span></label>
+          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Kecantikan"><span>Kecantikan</span></label>
+          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Musik"><span>Musik/Tarian</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Gaming"><span>Gaming</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Berita"><span>Berita</span></label>
+          <label class="flex items-center space-x-2"><input type="checkbox" name="kategori_konten" value="Travel"><span>Travel/Vlog</span></label>
         </div>
-        <p id="kategori_konten-error" class="text-red-500 text-xs mt-1 hidden">Pilih 1-3 kategori.</p>
       </div>
 
       <div>
-        <label class="block font-bold mb-2 text-gray-700">2. Apa yang Paling Anda Cari? (Max 2):</label>
+        <label class="block font-bold mb-2 text-gray-700">2. Apa yang Paling Anda Cari? (Pilih Max 2):</label>
         <div class="grid grid-cols-2 gap-2 p-3 border-2 rounded bg-gray-50" data-max="2">
           <label class="flex items-center space-x-2"><input type="checkbox" name="sifat_video" value="Fakta"><span>Informasi</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="sifat_video" value="Hiburan"><span>Hiburan</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="sifat_video" value="Inspirasi"><span>Inspirasi</span></label>
           <label class="flex items-center space-x-2"><input type="checkbox" name="sifat_video" value="Estetik"><span>Estetika Visual</span></label>
         </div>
-        <p id="sifat_video-error" class="text-red-500 text-xs mt-1 hidden">Pilih 1-2 sifat.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -53,14 +53,14 @@
           <label class="block font-bold mb-1">4. Format Konten:</label>
           <select name="format_video" required class="w-full border-2 p-3 rounded bg-white">
             <option value="">-- Pilih --</option>
-            <option value="1">Storytelling</option>
-            <option value="2">Tutorial</option>
-            <option value="3">Review</option>
+            <option value="1">Video Vertical</option>
+            <option value="2">Kolase</option>
+            <option value="3">Live</option>
           </select>
         </div>
       </div>
 
-      <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105">
         🚀 Kirim Jawaban
       </button>
       <p id="status" class="text-center text-sm font-medium mt-4"></p>
@@ -104,7 +104,7 @@
         status.textContent = "✅ Jawaban Berhasil Terkirim!";
         e.target.reset();
       } catch (err) {
-        status.textContent = "❌ Terjadi kesalahan koneksi.";
+        status.textContent = "❌ Terjadi kesalahan.";
       }
     });
   </script>
