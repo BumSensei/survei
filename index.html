@@ -9,7 +9,7 @@
 <body class="bg-gray-100 py-10 px-4">
   <div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg border">
     <div class="text-center mb-10">
-      <h1 class="text-3xl font-bold text-blue-900">📋 Survei Audiens TikTok</h1>
+      <h1 class="text-3xl font-bold text-blue-900">Survei Audiens TikTok</h1>
       <p class="text-gray-500 italic">Segmentasi Warga Kota Medan</p>
     </div>
 
@@ -60,13 +60,13 @@
         </div>
       </div>
 
-      <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105">🚀 Kirim Jawaban</button>
+      <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105">Kirim Jawaban</button>
       
       <p id="status" class="text-center text-sm font-medium mt-4"></p>
 
       <hr class="my-6">
       <div class="text-center">
-        <a href="admin.html" class="text-xs text-gray-400 hover:text-blue-600 underline">🔐 Panel Admin (Khusus Peneliti)</a>
+        <a href="admin.html" class="text-xs text-gray-400 hover:text-blue-600 underline">Panel Admin (Khusus Peneliti)</a>
       </div>
     </form>
   </div>
@@ -89,7 +89,7 @@
       e.preventDefault();
       const status = document.getElementById("status");
       status.className = "text-center text-blue-600 font-bold mt-4";
-      status.textContent = "⏳ Mengirim data...";
+      status.textContent = "Mengirim data...";
 
       const formData = new FormData(e.target);
       const payload = {
@@ -111,15 +111,16 @@
         // Karena Google Apps Script melakukan redirect, fetch mungkin akan gagal di CORS 
         // tapi data biasanya tetap masuk. Jika ingin benar-benar valid, biarkan saja mode default.
         status.className = "text-center text-green-600 font-bold mt-4";
-        status.textContent = "✅ Terkirim! Silakan cek Spreadsheet Anda.";
+        status.textContent = "Terkirim! Silakan cek Spreadsheet Anda.";
         e.target.reset();
       } catch (err) {
         // Jika gagal karena CORS, data biasanya sudah masuk ke Google jika Apps Script benar.
         status.className = "text-center text-yellow-600 font-bold mt-4";
-        status.textContent = "⚠️ Data sedang diproses. Silakan cek Spreadsheet.";
+        status.textContent = "Data sedang diproses. Silakan cek Spreadsheet.";
         console.error("Fetch error:", err);
       }
     });
   </script>
 </body>
 </html>
+
