@@ -55,17 +55,21 @@ document.getElementById("load-data")?.addEventListener("click", async () => {
     if (json.status !== "ok") throw new Error();
     rawData = json.data;
 
-    const numeric = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
-    const mins = Array(14).fill(Infinity), maxs = Array(14).fill(-Infinity);
-    numeric.forEach(p => p.forEach((v, i) => { mins[i]=Math.min(mins[i],v); maxs[i]=Math.max(maxs[i],v); }));
-    clusteringData = numeric.map(p => p.map((v, i) => (v - mins[i]) / ((maxs[i] - mins[i]) || 1)));
+    // --- Tambahkan Pemanggilan Tabel Di Sini ---
+    renderRawTable(rawData);
+    // -------------------------------------------
 
+    const numeric = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => parseFloat(d[v] || 0)));
+    // ... (kode normalisasi data tetap sama) ...
+    
     document.getElementById("login-section").classList.add("hidden");
     document.getElementById("main-app").classList.remove("hidden");
     const opt = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
     document.getElementById("select-x").innerHTML = opt; 
     document.getElementById("select-y").innerHTML = opt;
-  } catch (e) { status.textContent = "Gagal memuat data. Periksa Password atau URL Apps Script."; }
+  } catch (e) { 
+    status.textContent = "Gagal memuat data. Periksa Password atau URL Apps Script."; 
+  }
 });
 
 // Jalankan Metode Elbow
@@ -105,6 +109,21 @@ function renderElbowChart(sse) {
   });
 }
 
+function renderRawTable(data) {
+  const headerRow = document.getElementById("table-headers");
+  const body = document.getElementById("table-body");
+  
+  if (data.length === 0) return;
+
+  // 1. Ambil header dari kunci objek pertama (misal: timestamp, kategori_raw, dll)
+  const headers = Object.keys(data[0]);
+  headerRow.innerHTML = headers.map(h => `<th class="p-2 border font-bold uppercase">${h.replace('_',' ')}</th>`).join("");
+
+  // 2. Isi baris data
+  body.innerHTML = data.map(row => {
+    return `<tr>${headers.map(h => `<td class="p-2 border">${row[h] || ""}</td>`).join("")}</tr>`;
+  }).join("");
+}
 function renderScatter() {
   const ctx = document.getElementById("scatterChart");
   if (scatterChartInstance) scatterChartInstance.destroy();
@@ -184,4 +203,5 @@ function renderSummary() {
     });
     container.innerHTML += html + `</div></div>`;
   }
+  
 }
