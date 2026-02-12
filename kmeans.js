@@ -113,15 +113,37 @@ function renderRawTable(data) {
   const headerRow = document.getElementById("table-headers");
   const body = document.getElementById("table-body");
   
-  if (data.length === 0) return;
+  if (!data || data.length === 0) return;
 
-  // 1. Ambil header dari kunci objek pertama (misal: timestamp, kategori_raw, dll)
-  const headers = Object.keys(data[0]);
-  headerRow.innerHTML = headers.map(h => `<th class="p-2 border font-bold uppercase">${h.replace('_',' ')}</th>`).join("");
+  // 1. Definisikan Header Khusus
+  const customHeaders = ["No", "Durasi Video", "Format Video", "Kategori Raw", "Sifat Raw"];
+  headerRow.innerHTML = customHeaders.map(h => `<th class="p-3 border-b font-bold uppercase">${h}</th>`).join("");
 
-  // 2. Isi baris data
-  body.innerHTML = data.map(row => {
-    return `<tr>${headers.map(h => `<td class="p-2 border">${row[h] || ""}</td>`).join("")}</tr>`;
+  // 2. Mapping untuk teks durasi dan format
+  const durasiMap = {
+    "1": "< 15 detik",
+    "2": "15-30 detik",
+    "3": "30-60 detik",
+    "4": "> 60 detik"
+  };
+
+  const formatMap = {
+    "1": "Video Vertical",
+    "2": "Kolase",
+    "3": "Live"
+  };
+
+  // 3. Isi baris data dengan filter kolom tertentu
+  body.innerHTML = data.map((row, index) => {
+    return `
+      <tr class="hover:bg-gray-50">
+        <td class="p-3 border-b text-center font-medium text-gray-500">${index + 1}</td>
+        <td class="p-3 border-b">${durasiMap[row.durasi_video] || row.durasi_video}</td>
+        <td class="p-3 border-b">${formatMap[row.format_video] || row.format_video}</td>
+        <td class="p-3 border-b italic text-blue-700">${row.kategori_raw || "-"}</td>
+        <td class="p-3 border-b italic text-green-700">${row.sifat_raw || "-"}</td>
+      </tr>
+    `;
   }).join("");
 }
 function renderScatter() {
