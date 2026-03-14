@@ -1,6 +1,6 @@
 const CONFIG_K = {
-  // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT BARU ANDA
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyPP-_aNEGFWY6zKSEXPhT518dgc3AxDfkMSgC7lE-LoFHad2a69FeGawn4tKnWSCO_/exec",
+  // URL Deployment Anda
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbymtVDiTmF3kNpy-NcjRLhm0Lv2DkflrBMqTK6VOhYMS9fjd1Dr7bYkPXoA13_eAr8V/exec",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
@@ -17,11 +17,11 @@ const MAPPING = {
 let rawData = [], clusteringData = [], currentAssignments = [], currentCentroids = [];
 let elbowChartInstance = null, scatterChartInstance = null;
 
+// --- FUNGSI HELPER & ALGORITMA ---
 function cleanValue(val) {
   if (val === undefined || val === null || val === "") return 0;
   if (typeof val === "number") return val;
   let text = val.toString().toLowerCase().trim();
-  
   if (text.includes("lebih dari 60") || text === "4") return 4;
   if (text.includes("30 - 60") || text.includes("30-60") || text === "3") return 3;
   if (text.includes("15 - 30") || text.includes("15-30") || text === "2") return 2;
@@ -29,7 +29,6 @@ function cleanValue(val) {
   if (text.includes("vertical") || text === "1") return 1;
   if (text.includes("kolase") || text === "2") return 2;
   if (text.includes("live") || text === "3") return 3;
-  
   let num = parseFloat(text);
   return isNaN(num) ? 0 : num;
 }
@@ -68,90 +67,73 @@ function kmeans(data, k, maxIter = 50) {
   return { centroids, assignments };
 }
 
-// PERBAIKAN FETCH API UNTUK MENGHINDARI "FAILED TO FETCH"
-document.getElementById("load-data")?.addEventListener("click", async () => {
+// --- PENGAMBILAN DATA (JSONP / ANTI BLOKIR) ---
+document.getElementById("load-data")?.addEventListener("click", () => {
   const pw = document.getElementById("admin-password").value;
   const status = document.getElementById("status-message");
   status.textContent = "⏳ Memproses dan Mengambil Data...";
   status.className = "text-sm text-blue-600 mt-2 text-center";
   
-  try {
-    // encodeURIComponent penting agar karakter khusus di password tidak merusak URL
-    const url = `${CONFIG_K.APPS_SCRIPT_URL}?action=get_all&pw=${encodeURIComponent(pw)}`;
-    
-    const res = await fetch(url, {
-      method: 'GET',
-      redirect: 'follow' // Memaksa browser mengikuti pengalihan Google
-    });
-
-    if (!res.ok) {
-      throw new Error(`HTTP Error: ${res.status}`);
-    }
-
-    const textResponse = await res.text();
-    let json;
-    
+  const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+  
+  window[callbackName] = function(json) {
+    document.getElementById(callbackName).remove();
+    delete window[callbackName];
     try {
-      json = JSON.parse(textResponse);
-    } catch (parseError) {
-      console.error("Respon bukan JSON:", textResponse);
-      throw new Error("Gagal membaca data. Pastikan akses Deployment disetel ke 'Anyone'.");
+      if (json.status !== "ok") throw new Error(json.message);
+      let raw = json.data;
+      if (!raw || raw.length === 0) throw new Error("Data di Google Sheets masih kosong!");
+
+      if (Array.isArray(raw[0])) {
+          let headers = raw[0];
+          rawData = raw.slice(1).map(row => {
+              let obj = {};
+              headers.forEach((h, i) => obj[h.toString().trim()] = row[i]);
+              return obj;
+          });
+      } else {
+          rawData = raw;
+      }
+
+      renderRawTable(rawData);
+      const numeric = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => cleanValue(d[v])));
+      clusteringData = normalize(numeric);
+
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("main-app").classList.remove("hidden");
+      status.textContent = "";
+      
+      const opt = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
+      document.getElementById("select-x").innerHTML = opt; 
+      document.getElementById("select-y").innerHTML = opt;
+    } catch (e) {
+      status.textContent = "❌ Error: " + e.message; 
+      status.className = "text-sm text-red-600 mt-2 text-center font-bold";
     }
+  };
 
-    if (json.status !== "ok") {
-      throw new Error(json.message);
-    }
-    
-    let raw = json.data;
-    if (!raw || raw.length === 0) {
-      throw new Error("Data di Google Sheets masih kosong!");
-    }
-
-    // AUTO-DETECT STRUKTUR DATA (Mengatasi data lama vs baru)
-    if (Array.isArray(raw[0])) {
-        let headers = raw[0];
-        rawData = raw.slice(1).map(row => {
-            let obj = {};
-            headers.forEach((h, i) => obj[h.toString().trim()] = row[i]);
-            return obj;
-        });
-    } else {
-        rawData = raw;
-    }
-
-    renderRawTable(rawData);
-
-    // Filter dan Ekstrak Variabel Numerik
-    const numeric = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => cleanValue(d[v])));
-    clusteringData = normalize(numeric);
-
-    document.getElementById("login-section").classList.add("hidden");
-    document.getElementById("main-app").classList.remove("hidden");
-    status.textContent = "";
-    
-    const opt = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
-    document.getElementById("select-x").innerHTML = opt; 
-    document.getElementById("select-y").innerHTML = opt;
-
-  } catch (e) { 
-    status.textContent = "❌ Error: " + e.message; 
+  const script = document.createElement('script');
+  script.id = callbackName;
+  script.src = `${CONFIG_K.APPS_SCRIPT_URL}?action=get_all&pw=${encodeURIComponent(pw)}&callback=${callbackName}`;
+  script.onerror = function() {
+    document.getElementById(callbackName).remove();
+    delete window[callbackName];
+    status.textContent = "❌ Gagal koneksi ke Google. Pastikan URL Deployment sudah benar.";
     status.className = "text-sm text-red-600 mt-2 text-center font-bold";
-    console.error(e);
-  }
+  };
+  document.body.appendChild(script);
 });
 
-// EVENT LISTENER TOMBOL K-MEANS
+// --- EVENT LISTENER TOMBOL-TOMBOL ---
 document.getElementById("elbow-btn")?.addEventListener("click", () => {
   if (clusteringData.length === 0) return alert("Data kosong atau belum dimuat!");
   const sse = [];
-  const maxK = Math.min(8, clusteringData.length); // Jangan buat K lebih besar dari jumlah data
+  const maxK = Math.min(8, clusteringData.length); 
   
   for (let k=1; k<=maxK; k++) {
     const res = kmeans(clusteringData, k);
     let totalSSE = 0;
-    clusteringData.forEach((p, i) => { 
-      totalSSE += Math.pow(euclidean(p, res.centroids[res.assignments[i]]), 2); 
-    });
+    clusteringData.forEach((p, i) => { totalSSE += Math.pow(euclidean(p, res.centroids[res.assignments[i]]), 2); });
     sse.push(totalSSE);
   }
   
@@ -171,7 +153,17 @@ document.getElementById("analyze-btn")?.addEventListener("click", () => {
   renderSummary();
 });
 
-// --- UI Rendering ---
+// FITUR BARU: Tombol Update Grafik
+document.getElementById("update-scatter-btn")?.addEventListener("click", () => {
+  if (currentCentroids.length === 0) {
+    alert("Silakan klik 'Jalankan Analisis Final' terlebih dahulu!");
+    return;
+  }
+  renderScatter(); // Hanya menggambar ulang grafik, tidak memicu algoritma ulang
+});
+
+
+// --- UI RENDERING ---
 function renderElbowChart(sse) {
   const ctx = document.getElementById("elbowChart");
   if (elbowChartInstance) elbowChartInstance.destroy();
@@ -202,24 +194,13 @@ function renderScatter() {
   if (scatterChartInstance) scatterChartInstance.destroy();
   const vX = document.getElementById("select-x").value, vY = document.getElementById("select-y").value;
   const iX = CONFIG_K.CLUSTERING_VARS.indexOf(vX), iY = CONFIG_K.CLUSTERING_VARS.indexOf(vY);
-  
   const ds = Array.from({length: currentCentroids.length}, (_, i) => ({
     label: `Klaster ${i+1}`,
     data: clusteringData.filter((_, idx) => currentAssignments[idx] === i).map(p => ({x: p[iX], y: p[iY]})),
     backgroundColor: `hsl(${i * 360/currentCentroids.length}, 70%, 50%)`,
     pointRadius: 6
   }));
-  
-  // Tambah Centroid
-  ds.push({ 
-    label: 'Centroid', 
-    data: currentCentroids.map(c => ({x: c[iX], y: c[iY]})), 
-    backgroundColor: '#000', 
-    pointStyle: 'crossRot', 
-    pointRadius: 10, 
-    borderWidth: 2 
-  });
-
+  ds.push({ label: 'Centroid', data: currentCentroids.map(c => ({x: c[iX], y: c[iY]})), backgroundColor: '#000', pointStyle: 'crossRot', pointRadius: 10, borderWidth: 2 });
   scatterChartInstance = new Chart(ctx, { 
     type: 'scatter', 
     data: { datasets: ds }, 
@@ -227,8 +208,8 @@ function renderScatter() {
       responsive: true, 
       maintainAspectRatio: false,
       scales: {
-        x: { min: -0.1, max: 1.1, title: {display: true, text: vX} },
-        y: { min: -0.1, max: 1.1, title: {display: true, text: vY} }
+        xAxes: [{ ticks: { min: -0.1, max: 1.1 }, scaleLabel: { display: true, labelString: vX } }],
+        yAxes: [{ ticks: { min: -0.1, max: 1.1 }, scaleLabel: { display: true, labelString: vY } }]
       }
     } 
   });
@@ -238,9 +219,7 @@ function renderSummary() {
   const container = document.getElementById("result-text");
   container.innerHTML = "";
   
-  // Looping untuk setiap klaster yang terbentuk
   for (let i = 0; i < currentCentroids.length; i++) {
-    // Cari indeks data yang masuk ke klaster ini
     const clusterIndices = currentAssignments.reduce((acc, val, idx) => {
         if (val === i) acc.push(idx);
         return acc;
@@ -250,10 +229,9 @@ function renderSummary() {
     if (total === 0) continue;
 
     let html = `<div class="p-4 border-2 rounded-lg bg-white shadow-sm border-blue-200 mb-4">
-      <h4 class="font-bold text-blue-900 border-b-2 border-blue-100 pb-2 mb-3">Klaster ${i+1} (n = ${total} Responden)</h4>
+      <h4 class="font-bold text-blue-900 border-b-2 border-blue-100 pb-2 mb-3">Klaster ${i+1} (n = ${total})</h4>
       <div class="text-[12px] space-y-3">`;
 
-    // 1. Analisis Kategori dan Sifat (Biner 0/1)
     let traitHtml = `<div class="mb-2"><span class="font-bold text-gray-800 text-[11px] uppercase">Minat Konten Dominan:</span><div class="mt-1 space-y-1">`;
     let hasTraits = false;
 
@@ -265,7 +243,6 @@ function renderSummary() {
         });
         const pct = (count / total * 100).toFixed(0);
         
-        // Hanya tampilkan jika persentasenya di atas 30% agar karakteristik klaster terlihat jelas
         if (pct > 30) {
             hasTraits = true;
             let label = v.replace('Kategori_','').replace('Sifat_','');
@@ -278,11 +255,10 @@ function renderSummary() {
       }
     });
     
-    if (!hasTraits) traitHtml += `<span class="text-gray-400 italic">Tidak ada minat yang sangat dominan</span>`;
+    if (!hasTraits) traitHtml += `<span class="text-gray-400 italic">Tidak ada minat dominan</span>`;
     traitHtml += `</div></div>`;
     html += traitHtml;
 
-    // 2. Analisis Durasi dan Format Video
     CONFIG_K.CLUSTERING_VARS.forEach(v => {
       if (v === 'durasi_video' || v === 'format_video') {
         const counts = {};
@@ -297,25 +273,4 @@ function renderSummary() {
         
         let detail = `<div class="bg-gray-50 p-2 rounded mt-1 border border-gray-100 space-y-1">`;
         Object.keys(labels).forEach(key => {
-          const countVal = counts[key] || 0;
-          const pct = ((countVal / total) * 100).toFixed(0);
-          if (pct > 0) {
-              detail += `
-                <div class="flex justify-between">
-                    <span class="text-gray-600">• ${labels[key]}</span>
-                    <span class="font-bold text-gray-800">${pct}%</span>
-                </div>`;
-          }
-        });
-        detail += `</div>`;
-        
-        html += `<div>
-                  <span class="font-bold text-gray-800 text-[11px] uppercase">Distribusi ${title}:</span>
-                  ${detail}
-                 </div>`;
-      }
-    });
-    
-    container.innerHTML += html + `</div></div>`;
-  }
-}
+          const countVal = counts[key] || 0
