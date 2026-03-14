@@ -236,11 +236,86 @@ function renderScatter() {
 
 function renderSummary() {
   const container = document.getElementById("result-text");
-  container.innerHTML = currentCentroids.map((c, i) => {
-    const pts = rawData.filter((_, idx) => currentAssignments[idx] === i);
-    return `<div class="p-3 border-2 border-blue-100 rounded mb-2 bg-white shadow-sm">
-      <p class="font-bold text-blue-800">Klaster ${i+1} (n = ${pts.length} Responden)</p>
-      <p class="text-[11px] text-gray-600 mt-1">Gunakan diagram Scatter Plot di atas untuk melihat persebaran responden pada klaster ini.</p>
-    </div>`;
-  }).join("");
+  container.innerHTML = "";
+  
+  // Looping untuk setiap klaster yang terbentuk
+  for (let i = 0; i < currentCentroids.length; i++) {
+    // Cari indeks data yang masuk ke klaster ini
+    const clusterIndices = currentAssignments.reduce((acc, val, idx) => {
+        if (val === i) acc.push(idx);
+        return acc;
+    }, []);
+    
+    const total = clusterIndices.length;
+    if (total === 0) continue;
+
+    let html = `<div class="p-4 border-2 rounded-lg bg-white shadow-sm border-blue-200 mb-4">
+      <h4 class="font-bold text-blue-900 border-b-2 border-blue-100 pb-2 mb-3">Klaster ${i+1} (n = ${total} Responden)</h4>
+      <div class="text-[12px] space-y-3">`;
+
+    // 1. Analisis Kategori dan Sifat (Biner 0/1)
+    let traitHtml = `<div class="mb-2"><span class="font-bold text-gray-800 text-[11px] uppercase">Minat Konten Dominan:</span><div class="mt-1 space-y-1">`;
+    let hasTraits = false;
+
+    CONFIG_K.CLUSTERING_VARS.forEach(v => {
+      if (v.startsWith('Kategori_') || v.startsWith('Sifat_')) {
+        let count = 0;
+        clusterIndices.forEach(idx => {
+            if (cleanValue(rawData[idx][v]) === 1) count++;
+        });
+        const pct = (count / total * 100).toFixed(0);
+        
+        // Hanya tampilkan jika persentasenya di atas 30% agar karakteristik klaster terlihat jelas
+        if (pct > 30) {
+            hasTraits = true;
+            let label = v.replace('Kategori_','').replace('Sifat_','');
+            traitHtml += `
+              <div class="flex justify-between items-center border-b border-gray-100 pb-1">
+                  <span class="text-gray-700 font-medium">${label}</span>
+                  <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${pct}%</span>
+              </div>`;
+        }
+      }
+    });
+    
+    if (!hasTraits) traitHtml += `<span class="text-gray-400 italic">Tidak ada minat yang sangat dominan</span>`;
+    traitHtml += `</div></div>`;
+    html += traitHtml;
+
+    // 2. Analisis Durasi dan Format Video
+    CONFIG_K.CLUSTERING_VARS.forEach(v => {
+      if (v === 'durasi_video' || v === 'format_video') {
+        const counts = {};
+        clusterIndices.forEach(idx => {
+            let val = cleanValue(rawData[idx][v]);
+            counts[val] = (counts[val] || 0) + 1;
+        });
+        
+        const mapKey = v.includes('durasi') ? 'durasi' : 'format';
+        const labels = MAPPING[mapKey];
+        const title = v.replace('_video', '').toUpperCase();
+        
+        let detail = `<div class="bg-gray-50 p-2 rounded mt-1 border border-gray-100 space-y-1">`;
+        Object.keys(labels).forEach(key => {
+          const countVal = counts[key] || 0;
+          const pct = ((countVal / total) * 100).toFixed(0);
+          if (pct > 0) {
+              detail += `
+                <div class="flex justify-between">
+                    <span class="text-gray-600">• ${labels[key]}</span>
+                    <span class="font-bold text-gray-800">${pct}%</span>
+                </div>`;
+          }
+        });
+        detail += `</div>`;
+        
+        html += `<div>
+                  <span class="font-bold text-gray-800 text-[11px] uppercase">Distribusi ${title}:</span>
+                  ${detail}
+                 </div>`;
+      }
+    });
+    
+    container.innerHTML += html + `</div></div>`;
+  }
 }
