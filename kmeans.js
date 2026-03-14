@@ -273,4 +273,25 @@ function renderSummary() {
         
         let detail = `<div class="bg-gray-50 p-2 rounded mt-1 border border-gray-100 space-y-1">`;
         Object.keys(labels).forEach(key => {
-          const countVal = counts[key] || 0
+          const countVal = counts[key] || 0;
+          const pct = ((countVal / total) * 100).toFixed(0);
+          if (pct > 0) {
+              detail += `
+                <div class="flex justify-between">
+                    <span class="text-gray-600">• ${labels[key]}</span>
+                    <span class="font-bold text-gray-800">${pct}%</span>
+                </div>`;
+          }
+        });
+        detail += `</div>`;
+        
+        html += `<div>
+                  <span class="font-bold text-gray-800 text-[11px] uppercase">Distribusi ${title}:</span>
+                  ${detail}
+                 </div>`;
+      }
+    });
+    
+    container.innerHTML += html + `</div></div>`;
+  }
+}
