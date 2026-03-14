@@ -1,6 +1,6 @@
 const CONFIG_K = {
   // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT BARU ANDA
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsnhOY39niKL2QWGlBSXrrtb_9weikogUk_59anxkvPpsxFr9d8M1pS5PQ06SmPQQw/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbymtVDiTmF3kNpy-NcjRLhm0Lv2DkflrBMqTK6VOhYMS9fjd1Dr7bYkPXoA13_eAr8V/exec",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
