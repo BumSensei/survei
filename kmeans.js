@@ -1,13 +1,6 @@
-/**
- * K-MEANS CLUSTERING SYSTEM FOR AUDIENCE SEGMENTATION
- * Updated for: Skripsi - Personalisasi Konten Sosial Media
- */
-
 const CONFIG_K = {
-  // Ganti URL ini dengan URL Web App dari Deploy Google Apps Script Anda
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsnhOY39niKL2QWGlBSXrrtb_9weikogUk_59anxkvPpsxFr9d8M1pS5PQ06SmPQQw/exec",
   
-  // Urutan variabel harus sesuai dengan header di Google Sheets (setelah Timestamp)
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
@@ -24,11 +17,7 @@ const MAPPING = {
 let rawData = [], clusteringData = [], currentAssignments = [], currentCentroids = [];
 let elbowChartInstance = null, scatterChartInstance = null;
 
-// ==========================================
-// 1. CORE ALGORITHM & MATH
-// ==========================================
-
-// Fungsi Normalisasi Min-Max (Kunci agar grafik Elbow tidak lurus)
+// Fungsi Normalisasi Min-Max
 function normalize(data) {
   if (data.length === 0) return [];
   const numCols = data[0].length;
@@ -90,10 +79,6 @@ function kmeans(data, k, maxIter = 50) {
   }
   return { centroids, assignments };
 }
-
-// ==========================================
-// 2. UI HANDLERS (Fetch & Buttons)
-// ==========================================
 
 // Tombol Ambil Data dari Spreadsheet
 document.getElementById("load-data")?.addEventListener("click", async () => {
