@@ -1,6 +1,6 @@
 const CONFIG_K = {
   // URL Deployment Anda
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyPP-_aNEGFWY6zKSEXPhT518dgc3AxDfkMSgC7lE-LoFHad2a69FeGawn4tKnWSCO_/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyaqwe_w0O9zWXITowThz5CkPleZ5s22lD-xmvBWwkvFvPNSW0iBqC2BLekM3pYEQZ3/exec",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
