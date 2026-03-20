@@ -1,5 +1,4 @@
 const CONFIG_K = {
-  // URL Deployment Anda
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyaqwe_w0O9zWXITowThz5CkPleZ5s22lD-xmvBWwkvFvPNSW0iBqC2BLekM3pYEQZ3/exec",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
@@ -17,7 +16,6 @@ const MAPPING = {
 let rawData = [], clusteringData = [], currentAssignments = [], currentCentroids = [];
 let elbowChartInstance = null, scatterChartInstance = null;
 
-// --- FUNGSI HELPER & ALGORITMA ---
 function cleanValue(val) {
   if (val === undefined || val === null || val === "") return 0;
   if (typeof val === "number") return val;
@@ -67,7 +65,6 @@ function kmeans(data, k, maxIter = 50) {
   return { centroids, assignments };
 }
 
-// --- PENGAMBILAN DATA (JSONP / ANTI BLOKIR) ---
 document.getElementById("load-data")?.addEventListener("click", () => {
   const pw = document.getElementById("admin-password").value;
   const status = document.getElementById("status-message");
@@ -124,7 +121,6 @@ document.getElementById("load-data")?.addEventListener("click", () => {
   document.body.appendChild(script);
 });
 
-// --- EVENT LISTENER TOMBOL-TOMBOL ---
 document.getElementById("elbow-btn")?.addEventListener("click", () => {
   if (clusteringData.length === 0) return alert("Data kosong atau belum dimuat!");
   const sse = [];
@@ -153,7 +149,6 @@ document.getElementById("analyze-btn")?.addEventListener("click", () => {
   renderSummary();
 });
 
-// FITUR BARU: Tombol Update Grafik
 document.getElementById("update-scatter-btn")?.addEventListener("click", () => {
   if (currentCentroids.length === 0) {
     alert("Silakan klik 'Jalankan Analisis Final' terlebih dahulu!");
@@ -162,8 +157,6 @@ document.getElementById("update-scatter-btn")?.addEventListener("click", () => {
   renderScatter(); // Hanya menggambar ulang grafik, tidak memicu algoritma ulang
 });
 
-
-// --- UI RENDERING ---
 function renderElbowChart(sse) {
   const ctx = document.getElementById("elbowChart");
   if (elbowChartInstance) elbowChartInstance.destroy();
@@ -302,13 +295,11 @@ document.getElementById("download-csv-btn")?.addEventListener("click", () => {
     return;
   }
 
-  // 1. Ambil nama-nama kolom (header) dari data asli
   let headers = Object.keys(rawData[0]);
   headers.push("Hasil_Klaster"); // Tambahkan kolom baru untuk hasil
 
   let csvContent = headers.join(",") + "\n";
 
-  // 2. Gabungkan data tiap responden dengan hasil klasternya
   rawData.forEach((row, idx) => {
     let rowData = headers.map(header => {
       if (header === "Hasil_Klaster") {
@@ -320,7 +311,6 @@ document.getElementById("download-csv-btn")?.addEventListener("click", () => {
     csvContent += rowData.join(",") + "\n";
   });
 
-  // 3. Proses pengunduhan file
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -332,17 +322,13 @@ document.getElementById("download-csv-btn")?.addEventListener("click", () => {
   document.body.removeChild(link);
 });
 
-// ==========================================
-// FITUR BARU: SIMPAN GRAFIK SCATTER KE PNG
-// ==========================================
 document.getElementById("download-chart-btn")?.addEventListener("click", () => {
   const canvas = document.getElementById("scatterChart");
   if (!scatterChartInstance || currentAssignments.length === 0) {
     alert("Grafik belum tersedia!");
     return;
   }
-  
-  // Membuat background kanvas menjadi putih (karena defaultnya transparan)
+
   const newCanvas = document.createElement('canvas');
   newCanvas.width = canvas.width;
   newCanvas.height = canvas.height;
@@ -351,9 +337,87 @@ document.getElementById("download-chart-btn")?.addEventListener("click", () => {
   ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
   ctx.drawImage(canvas, 0, 0);
 
-  // Proses pengunduhan gambar
   const link = document.createElement('a');
   link.download = 'Scatter_Plot_Audiens.png';
   link.href = newCanvas.toDataURL('image/png');
   link.click();
+});
+
+document.getElementById("trigger-upload-btn")?.addEventListener("click", () => {
+  document.getElementById("upload-csv-input").click();
+});
+
+document.getElementById("upload-csv-input")?.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    try {
+      const text = event.target.result;
+      const lines = text.split('\n').filter(line => line.trim() !== '');
+      if (lines.length < 2) throw new Error("File CSV kosong atau tidak valid.");
+
+      const headers = lines[0].split(',');
+      const clusterColIndex = headers.indexOf('Hasil_Klaster');
+      
+      if (clusterColIndex === -1) {
+        throw new Error("Kolom 'Hasil_Klaster' tidak ditemukan! Pastikan ini adalah file CSV yang di-download dari sistem ini.");
+      }
+
+      rawData = [];
+      currentAssignments = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        // Regex memisahkan koma tapi mengabaikan koma di dalam tanda kutip
+        let cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+        if (!cols) continue;
+        cols = cols.map(c => c.replace(/^"|"$/g, '').trim()); // Hilangkan tanda kutip
+
+        let obj = {};
+        headers.forEach((h, idx) => {
+          if (h !== 'Hasil_Klaster') {
+            obj[h.trim()] = cols[idx];
+          }
+        });
+        rawData.push(obj);
+        currentAssignments.push(parseInt(cols[clusterColIndex]) - 1); // Kurangi 1 karena array dimulai dari 0
+      }
+
+      const numeric = rawData.map(d => CONFIG_K.CLUSTERING_VARS.map(v => cleanValue(d[v])));
+      clusteringData = normalize(numeric);
+
+      const k = Math.max(...currentAssignments) + 1;
+      currentCentroids = Array.from({ length: k }, () => Array(clusteringData[0].length).fill(0));
+      let counts = Array(k).fill(0);
+
+      clusteringData.forEach((p, idx) => {
+        let clusterIdx = currentAssignments[idx];
+        counts[clusterIdx]++;
+        p.forEach((v, dim) => currentCentroids[clusterIdx][dim] += v);
+      });
+      currentCentroids = currentCentroids.map((c, j) => counts[j] > 0 ? c.map(v => v / counts[j]) : c);
+
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("main-app").classList.remove("hidden");
+      
+      renderRawTable(rawData);
+      const opt = CONFIG_K.CLUSTERING_VARS.map(v => `<option value="${v}">${v}</option>`).join("");
+      document.getElementById("select-x").innerHTML = opt; 
+      document.getElementById("select-y").innerHTML = opt;
+      
+      document.getElementById("results-section").classList.remove("hidden");
+      renderScatter();
+      renderSummary();
+
+      alert("Data klaster lama berhasil direkonstruksi!");
+
+    } catch (err) {
+      alert("❌ Gagal memuat file: " + err.message);
+    }
+    
+    e.target.value = ""; 
+  };
+  
+  reader.readAsText(file);
 });
