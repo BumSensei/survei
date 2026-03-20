@@ -10,11 +10,21 @@
   <div class="max-w-5xl mx-auto space-y-6">
     <h1 class="text-2xl font-bold text-blue-900 border-b-4 border-blue-500 pb-2">Dashboard Analisis K-Means</h1>
 
-    <div id="login-section" class="bg-white p-6 rounded shadow-lg max-w-sm mx-auto">
-      <label class="block text-sm font-bold mb-2">Password Admin:</label>
-      <input id="admin-password" type="password" class="w-full border p-2 rounded mb-4" placeholder="PASSWORD">
-      <button id="load-data" class="w-full bg-blue-600 text-white font-bold py-2 rounded">Ambil Data Survei</button>
-      <p id="status-message" class="text-center text-xs mt-2 text-red-500"></p>
+  <div id="login-section" class="bg-white p-6 rounded shadow-lg max-w-sm mx-auto">
+      <h2 class="text-center font-bold text-lg mb-4 text-blue-900">Mulai Analisis</h2>
+      
+      <label class="block text-xs font-bold mb-1 text-gray-600 uppercase">Opsi 1: Tarik Data Baru (Google Sheets)</label>
+      <input id="admin-password" type="password" class="w-full border p-2 rounded mb-2 text-sm" placeholder="Masukkan Password">
+      <button id="load-data" class="w-full bg-blue-600 text-white font-bold py-2 rounded text-sm hover:bg-blue-700">Tarik Data Survei</button>
+      <p id="status-message" class="text-center text-xs mt-2 mb-4 text-red-500"></p>
+      
+      <hr class="mb-4">
+
+      <label class="block text-xs font-bold mb-1 text-gray-600 uppercase">Opsi 2: Muat Hasil Klaster Lama</label>
+      <input type="file" id="upload-csv-input" accept=".csv" class="hidden">
+      <button id="trigger-upload-btn" class="w-full bg-gray-800 text-white font-bold py-2 rounded text-sm hover:bg-gray-900 flex items-center justify-center gap-2">
+        <span>📂</span> Upload CSV Tersimpan
+      </button>
     </div>
 
     <div id="main-app" class="hidden space-y-6">
