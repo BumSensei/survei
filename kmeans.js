@@ -295,3 +295,65 @@ function renderSummary() {
     container.innerHTML += html + `</div></div>`;
   }
 }
+
+document.getElementById("download-csv-btn")?.addEventListener("click", () => {
+  if (currentAssignments.length === 0) {
+    alert("Silakan klik 'Jalankan Analisis Final' terlebih dahulu!");
+    return;
+  }
+
+  // 1. Ambil nama-nama kolom (header) dari data asli
+  let headers = Object.keys(rawData[0]);
+  headers.push("Hasil_Klaster"); // Tambahkan kolom baru untuk hasil
+
+  let csvContent = headers.join(",") + "\n";
+
+  // 2. Gabungkan data tiap responden dengan hasil klasternya
+  rawData.forEach((row, idx) => {
+    let rowData = headers.map(header => {
+      if (header === "Hasil_Klaster") {
+        return currentAssignments[idx] + 1; // Mengisi kolom baru dengan angka Klaster (1, 2, dst)
+      }
+      let val = row[header] !== undefined ? row[header] : "";
+      return `"${val}"`; // Dibungkus tanda kutip agar aman jika ada koma di dalam teks
+    });
+    csvContent += rowData.join(",") + "\n";
+  });
+
+  // 3. Proses pengunduhan file
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "Data_Klasterisasi_TikTok_Medan.csv");
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+
+// ==========================================
+// FITUR BARU: SIMPAN GRAFIK SCATTER KE PNG
+// ==========================================
+document.getElementById("download-chart-btn")?.addEventListener("click", () => {
+  const canvas = document.getElementById("scatterChart");
+  if (!scatterChartInstance || currentAssignments.length === 0) {
+    alert("Grafik belum tersedia!");
+    return;
+  }
+  
+  // Membuat background kanvas menjadi putih (karena defaultnya transparan)
+  const newCanvas = document.createElement('canvas');
+  newCanvas.width = canvas.width;
+  newCanvas.height = canvas.height;
+  const ctx = newCanvas.getContext('2d');
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+  ctx.drawImage(canvas, 0, 0);
+
+  // Proses pengunduhan gambar
+  const link = document.createElement('a');
+  link.download = 'Scatter_Plot_Audiens.png';
+  link.href = newCanvas.toDataURL('image/png');
+  link.click();
+});
