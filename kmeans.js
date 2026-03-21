@@ -225,11 +225,12 @@ function renderSummary() {
       <h4 class="font-bold text-blue-900 border-b-2 border-blue-100 pb-2 mb-3">Klaster ${i+1} (n = ${total})</h4>
       <div class="text-[12px] space-y-3">`;
 
-    let traitHtml = `<div class="mb-2"><span class="font-bold text-gray-800 text-[11px] uppercase">Minat Konten Dominan:</span><div class="mt-1 space-y-1">`;
-    let hasTraits = false;
+    // --- 1. BLOK SIFAT KONTEN ---
+    let sifatHtml = `<div class="mb-2"><span class="font-bold text-gray-800 text-[11px] uppercase">Sifat Konten Dominan:</span><div class="mt-1 space-y-1">`;
+    let hasSifat = false;
 
     CONFIG_K.CLUSTERING_VARS.forEach(v => {
-      if (v.startsWith('Kategori_') || v.startsWith('Sifat_')) {
+      if (v.startsWith('Sifat_')) {
         let count = 0;
         clusterIndices.forEach(idx => {
             if (cleanValue(rawData[idx][v]) === 1) count++;
@@ -237,9 +238,37 @@ function renderSummary() {
         const pct = (count / total * 100).toFixed(0);
         
         if (pct > 30) {
-            hasTraits = true;
-            let label = v.replace('Kategori_','').replace('Sifat_','');
-            traitHtml += `
+            hasSifat = true;
+            let label = v.replace('Sifat_','');
+            sifatHtml += `
+              <div class="flex justify-between items-center border-b border-gray-100 pb-1">
+                  <span class="text-gray-700 font-medium">${label}</span>
+                  <span class="font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">${pct}%</span>
+              </div>`;
+        }
+      }
+    });
+    
+    if (!hasSifat) sifatHtml += `<span class="text-gray-400 italic">Tidak ada sifat dominan</span>`;
+    sifatHtml += `</div></div>`;
+    html += sifatHtml; // Masukkan blok Sifat ke HTML utama
+
+    // --- 2. BLOK KATEGORI KONTEN ---
+    let kategoriHtml = `<div class="mb-2"><span class="font-bold text-gray-800 text-[11px] uppercase">Kategori Konten Dominan:</span><div class="mt-1 space-y-1">`;
+    let hasKategori = false;
+
+    CONFIG_K.CLUSTERING_VARS.forEach(v => {
+      if (v.startsWith('Kategori_')) {
+        let count = 0;
+        clusterIndices.forEach(idx => {
+            if (cleanValue(rawData[idx][v]) === 1) count++;
+        });
+        const pct = (count / total * 100).toFixed(0);
+        
+        if (pct > 30) {
+            hasKategori = true;
+            let label = v.replace('Kategori_','');
+            kategoriHtml += `
               <div class="flex justify-between items-center border-b border-gray-100 pb-1">
                   <span class="text-gray-700 font-medium">${label}</span>
                   <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${pct}%</span>
@@ -248,10 +277,11 @@ function renderSummary() {
       }
     });
     
-    if (!hasTraits) traitHtml += `<span class="text-gray-400 italic">Tidak ada minat dominan</span>`;
-    traitHtml += `</div></div>`;
-    html += traitHtml;
+    if (!hasKategori) kategoriHtml += `<span class="text-gray-400 italic">Tidak ada kategori dominan</span>`;
+    kategoriHtml += `</div></div>`;
+    html += kategoriHtml; // Masukkan blok Kategori ke HTML utama
 
+    // --- 3. BLOK DURASI & FORMAT (Tetap Sama) ---
     CONFIG_K.CLUSTERING_VARS.forEach(v => {
       if (v === 'durasi_video' || v === 'format_video') {
         const counts = {};
@@ -278,7 +308,7 @@ function renderSummary() {
         });
         detail += `</div>`;
         
-        html += `<div>
+        html += `<div class="mb-2">
                   <span class="font-bold text-gray-800 text-[11px] uppercase">Distribusi ${title}:</span>
                   ${detail}
                  </div>`;
