@@ -72,10 +72,8 @@
   </div>
 
   <script>
-    // GANTI URL INI dengan URL Web App Anda yang baru (setelah Deploy)
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaqwe_w0O9zWXITowThz5CkPleZ5s22lD-xmvBWwkvFvPNSW0iBqC2BLekM3pYEQZ3/exec";
 
-    // Validasi maksimal pilihan
     document.querySelectorAll('[data-max]').forEach(container => {
       const max = parseInt(container.dataset.max);
       container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
@@ -102,19 +100,15 @@
       };
 
       try {
-        // PERBAIKAN: Menghapus 'no-cors' agar kita bisa menangkap respon asli dari Google
         const response = await fetch(APPS_SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify(payload)
         });
 
-        // Karena Google Apps Script melakukan redirect, fetch mungkin akan gagal di CORS 
-        // tapi data biasanya tetap masuk. Jika ingin benar-benar valid, biarkan saja mode default.
         status.className = "text-center text-green-600 font-bold mt-4";
         status.textContent = "Terkirim! Silakan cek Spreadsheet Anda.";
         e.target.reset();
       } catch (err) {
-        // Jika gagal karena CORS, data biasanya sudah masuk ke Google jika Apps Script benar.
         status.className = "text-center text-yellow-600 font-bold mt-4";
         status.textContent = "Data sedang diproses. Silakan cek Spreadsheet.";
         console.error("Fetch error:", err);
