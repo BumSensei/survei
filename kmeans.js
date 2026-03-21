@@ -3,7 +3,7 @@ const CONFIG_K = {
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
-    "Sifat_Fakta", "Sifat_Hiburan", "Sifat_Inspirasi", "Sifat_Estetik",
+    "Sifat_Informasi", "Sifat_Hiburan", "Sifat_Inspirasi", "Sifat_Estetik",
     "durasi_video", "format_video"
   ]
 };
