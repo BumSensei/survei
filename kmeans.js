@@ -172,19 +172,14 @@ function renderElbowChart(sse) {
 
 function renderRawTable(data) {
   const body = document.getElementById("table-body");
-  body.innerHTML = data.map((row, i) => {
-    const durasiText = MAPPING.durasi[row.durasi_video] || row.durasi_video || "-";
-    const formatText = MAPPING.format[row.format_video] || row.format_video || "-";
-    
-    return `
-      <tr class="text-xs border-b hover:bg-gray-50">
-        <td class="p-2 text-center">${i+1}</td>
-        <td class="p-2">${durasiText}</td>
-        <td class="p-2">${formatText}</td>
-        <td class="p-2 text-blue-600">${row.kategori_raw || "-"}</td>
-        <td class="p-2 text-green-600">${row.sifat_raw || "-"}</td>
-      </tr>`;
-  }).join("");
+  body.innerHTML = data.map((row, i) => `
+    <tr class="text-xs border-b hover:bg-gray-50">
+      <td class="p-2 text-center">${i+1}</td>
+      <td class="p-2">${row.durasi_video || "-"}</td>
+      <td class="p-2">${row.format_video || "-"}</td>
+      <td class="p-2 text-blue-600">${row.kategori_raw || "-"}</td>
+      <td class="p-2 text-green-600">${row.sifat_raw || "-"}</td>
+    </tr>`).join("");
 }
 
 function renderScatter() {
