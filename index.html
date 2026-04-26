@@ -106,11 +106,11 @@
         });
 
         status.className = "text-center text-green-600 font-bold mt-4";
-        status.textContent = "Terkirim! Silakan cek Spreadsheet Anda.";
+        status.textContent = "Terkirim!";
         e.target.reset();
       } catch (err) {
         status.className = "text-center text-yellow-600 font-bold mt-4";
-        status.textContent = "Data sedang diproses. Silakan cek Spreadsheet.";
+        status.textContent = "Data sedang diproses";
         console.error("Fetch error:", err);
       }
     });
