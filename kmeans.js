@@ -1,5 +1,5 @@
 const CONFIG_K = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzrH8f29cOIHC6tVMsvXmaSCjoI-Q2lKZnGhKnBHGsCQdvTxnDgl-pPypGSqmWrxUg3/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzQhQIFEzC2ZXXnv4rDPO2bcBZB_TFhC4QbH68CRt-sSVnMTDWxonrsD9D17i3yfqNz/exec",
   CLUSTERING_VARS: [
     "Kategori_Komedi", "Kategori_Edukasi", "Kategori_Makanan", "Kategori_Kecantikan", 
     "Kategori_Musik", "Kategori_Gaming", "Kategori_Berita", "Kategori_Travel",
